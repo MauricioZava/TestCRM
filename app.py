@@ -33,6 +33,7 @@ task_scheduler_lock = threading.Lock()
 # DELETE SIGN-IN
 # -----------------------------
 
+from flask import render_template
 @app.route("/")
 def index():
     return render_template("index.html")

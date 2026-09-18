@@ -32,6 +32,13 @@ task_scheduler_lock = threading.Lock()
 # -----------------------------
 # DELETE SIGN-IN
 # -----------------------------
+
+@app.route("/")
+def index():
+    return "CRM is running!"
+
+
+
 @app.route("/delete_signin/<int:signin_id>")
 def delete_signin(signin_id):
     conn = sqlite3.connect(DB_NAME)

@@ -13,7 +13,6 @@ from urllib.request import Request, urlopen
 from email.mime.text import MIMEText
 from flask import Flask, render_template, request, redirect, url_for, make_response
 
-from flask import Flask
 app = Flask(__name__)
 DB_NAME = "database.db"
 
@@ -35,7 +34,8 @@ task_scheduler_lock = threading.Lock()
 
 @app.route("/")
 def index():
-    return "CRM is running!"
+    return render_template("index.html")
+
 
 
 

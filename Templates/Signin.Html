@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open House Sign-In</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #24435f;
+            --muted: #6d879e;
+            --blue: #4c96c9;
+            --blue-dark: #326f9f;
+            --sky: #dceefa;
+            --line: #b9d3e6;
+            --surface: #fbfdff;
+            --soft: #edf7fd;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 14px;
+            display: grid;
+            place-items: center;
+            color: var(--ink);
+            font-family: "DM Sans", sans-serif;
+            background: var(--sky);
+            background-image: radial-gradient(circle at 8% 10%, rgba(255,255,255,.9), transparent 25%), radial-gradient(circle at 92% 88%, rgba(124,174,224,.3), transparent 32%), linear-gradient(135deg, #edf8ff, #cfe6f7);
+        }
+
+        .container {
+            position: relative;
+            width: min(100%, 660px);
+            max-height: calc(100vh - 28px);
+            overflow-y: auto;
+            padding: clamp(22px, 3.5vw, 34px) clamp(22px, 4vw, 42px);
+            border: 1px solid rgba(86,139,180,.28);
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: 0 24px 70px rgba(66,112,150,.2);
+            animation: rise .45s ease both;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 7px;
+            background: linear-gradient(90deg, #5a9fd0, #a9d9f2, #7caee0);
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .open-house-address {
+            display: block;
+            margin: 0 auto 10px;
+            padding: 5px 12px;
+            color: var(--blue-dark);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: clamp(20px, 3.5vw, 29px);
+            font-weight: 700;
+            letter-spacing: -.02em;
+            text-align: center;
+        }
+
+        .open-house-agent {
+            margin: 0 auto 3px;
+            color: var(--ink);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .open-house-date {
+            margin: 0 auto 12px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 4px 0 7px;
+            color: var(--ink);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 21px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .intro {
+            max-width: 430px;
+            margin: 0 auto 16px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .eyebrow {
+            margin-top: 8px;
+            color: var(--blue-dark);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .16em;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .form-heading {
+            margin: 0 0 2px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+            color: var(--ink);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        label {
+            display: block;
+            margin-top: 11px;
+            color: var(--ink);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            min-height: 40px;
+            margin-top: 5px;
+            padding: 8px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-size: 15px;
+            transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--blue);
+            outline: none;
+            background: #f4faff;
+            box-shadow: 0 0 0 4px rgba(76,150,201,.15);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 11px;
+            padding: 9px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--soft);
+        }
+
+        .checkbox-field input {
+            width: 18px;
+            min-height: 18px;
+            margin: 0;
+            accent-color: var(--blue);
+        }
+
+        .checkbox-field label { margin: 0; font-size: 14px; }
+        textarea { min-height: 68px; resize: vertical; }
+
+        button {
+            width: 100%;
+            min-height: 46px;
+            margin-top: 17px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--blue);
+            color: #fff;
+            font: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(76,150,201,.22);
+            transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+        }
+
+        button:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 10px 22px rgba(50,111,159,.28); }
+        .footer-note { margin-top: 12px; color: var(--muted); font-size: 13px; text-align: center; }
+        .footer-note strong { color: var(--blue-dark); }
+
+        @media (max-width: 540px) {
+            body { padding: 8px; place-items: start center; }
+            .container { max-height: calc(100vh - 16px); padding: 22px 16px; }
+            .row { grid-template-columns: 1fr; gap: 0; }
+        }
+    </style>
+    <script>
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "F1") {
+                event.preventDefault();
+                window.location.href = "/dashboard";
+            } else if (event.key === "F2") {
+                event.preventDefault();
+                window.location.href = "/properties";
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        {% if open_house %}
+        <div class="open-house-address">{{ open_house.address }}</div>
+        <div class="open-house-agent">Hosted by {{ open_house.agent_name }}</div>
+        <div class="open-house-date">{{ open_house.date }} · {{ open_house.time }}</div>
+        {% endif %}
+
+        <h1>Open House Sign-In</h1>
+        <p class="intro">Tell us a little about your plans, and we will follow up with the details that matter to you.</p>
+
+        <form method="post">
+            <div class="eyebrow">Guest details</div>
+            <h2 class="form-heading">Tell us about yourself</h2>
+
+            <label>Name</label>
+            <input type="text" name="name" required>
+
+            <label>Email</label>
+            <input type="email" name="email" required>
+
+            <label>Phone</label>
+            <input type="text" name="phone">
+
+            <label>Zip Code</label>
+            <input type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" maxlength="10">
+
+            <div class="row">
+                <div>
+                    <label>Are you a:</label>
+                    <select name="visitor_type" required>
+                        <option value="buyer">Buyer</option>
+                        <option value="seller">Seller</option>
+                        <option value="neighbor">Neighbor</option>
+                        <option value="just-looking">Just Looking</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Currently:</label>
+                    <select name="currently" required>
+                        <option value="renting">Renting</option>
+                        <option value="own">Own</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="checkbox-field">
+                <input type="checkbox" id="workingWithBroker" name="working_with_broker" value="yes">
+                <label for="workingWithBroker">Are you currently working with a broker?</label>
+            </div>
+
+            <label>How did you hear about us?</label>
+            <select name="heard_about_us" required>
+                <option value="" selected disabled>Select an option</option>
+                <option value="zillow">Zillow</option>
+                <option value="yard-sign">Yard Sign</option>
+                <option value="social-media">Social Media</option>
+                <option value="mls">MLS</option>
+            </select>
+
+            <label>Timeline</label>
+            <select name="timeline" required>
+                <option value="0-3">0–3 months</option>
+                <option value="3-6">3–6 months</option>
+                <option value="6-12">6–12 months</option>
+                <option value="browsing">Just browsing</option>
+            </select>
+
+            <label>Pre-approval</label>
+            <select name="preapproval" required>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+                <option value="unknown">Not sure</option>
+            </select>
+
+            <label>Notes (optional)</label>
+            <textarea name="notes" rows="3"></textarea>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="footer-note">Press <strong>F1</strong> for dashboard or <strong>F2</strong> for properties</div>
+    </div>
+</body>
+</html>

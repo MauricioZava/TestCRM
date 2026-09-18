@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Home</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 40px auto; }
+        label { display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin-top: 4px; }
+        button { margin-top: 20px; padding: 10px 20px; }
+    </style>
+</head>
+
+<body>
+    <h1>Edit Home</h1>
+
+    <form method="POST">
+        <label>Property ID</label>
+        <input type="text" name="property_id" value="{{ home[0] }}" required>
+
+        <label>Address</label>
+        <input type="text" name="address" value="{{ home[1] }}" required>
+
+        <label>City</label>
+        <input type="text" name="city" value="{{ home[2] }}" required>
+
+        <label>State</label>
+        <input type="text" name="state" value="{{ home[3] }}" required>
+
+        <label>Zip Code</label>
+        <input type="text" name="zip_code" value="{{ home[4] }}" required>
+
+        <button type="submit">Save Changes</button>
+    </form>
+
+</body>
+</html>

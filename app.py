@@ -5,6 +5,7 @@ import io
 import json
 import threading
 import time
+import os
 from datetime import datetime
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -1166,9 +1167,7 @@ if __name__ == "__main__":
     init_agents_table()
     init_open_houses_table()
     init_tasks_table()
-  import os
 
 port = int(os.environ.get("PORT", 5000))
-
 app.run(host="0.0.0.0", port=port)
 

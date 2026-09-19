@@ -5,6 +5,7 @@ import io
 import json
 import threading
 import time
+import os
 from datetime import datetime
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -31,6 +32,15 @@ task_scheduler_lock = threading.Lock()
 # -----------------------------
 # DELETE SIGN-IN
 # -----------------------------
+
+from flask import render_template
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+
+
 @app.route("/delete_signin/<int:signin_id>")
 def delete_signin(signin_id):
     conn = sqlite3.connect(DB_NAME)
@@ -1166,11 +1176,16 @@ if __name__ == "__main__":
     init_agents_table()
     init_open_houses_table()
     init_tasks_table()
+<<<<<<< HEAD
     
     import os
 
     port = int(os.environ.get("PORT", 5000))
 
     app.run(host="0.0.0.0", port=port)
+=======
+>>>>>>> b60a27c0bbd5dfebcaeca54f97d8fd63f503ab9f
 
+port = int(os.environ.get("PORT", 8080))
+app.run(host="0.0.0.0", port=port)
 

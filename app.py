@@ -1177,7 +1177,6 @@ if __name__ == "__main__":
     init_open_houses_table()
     init_tasks_table()
 
->>>>>>> b60a27c0bbd5dfebcaeca54f97d8fd63f503ab9f
 
 port = int(os.environ.get("PORT", 8080))
 app.run(host="0.0.0.0", port=port)

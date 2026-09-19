@@ -1,1 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Properties</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fff; --line: #d9e1ea; --blue: #2563c7; --blue-dark: #194c9d; --red: #c82333; }
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        .page { max-width: 1440px; margin: 0 auto; }
+        .shortcut-bar { display: flex; gap: 9px; margin-bottom: 30px; }
+        .shortcut-bar a { padding: 9px 13px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.7); color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; }
+        .shortcut-bar a:hover { border-color: var(--blue); color: var(--blue); }
+        .page-heading { margin-bottom: 26px; }
+        .eyebrow { margin: 0 0 7px; color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+        h1 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; font-size: clamp(30px, 4vw, 44px); letter-spacing: -.04em; }
+        .subtitle { margin: 8px 0 0; color: var(--muted); }
+        .workspace { display: grid; grid-template-columns: minmax(300px, 390px) minmax(0, 1fr); gap: 22px; align-items: start; }
+        .panel { padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: 0 12px 30px rgba(23,32,51,.08); }
+        .panel h2 { margin: 0 0 18px; font-family: "Space Grotesk", Arial, sans-serif; font-size: 20px; }
+        .address-search { position: relative; margin-bottom: 18px; }
+        label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: .03em; }
+        input { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; }
+        input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .address-search input { width: 100%; }
+        .suggestions { position: absolute; z-index: 2; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: white; box-shadow: 0 8px 20px rgba(23,32,51,.14); }
+        .suggestion { display: block; width: 100%; padding: 11px 12px; border: 0; border-bottom: 1px solid #edf1f4; border-radius: 0; background: white; color: var(--ink); font: inherit; text-align: left; }
+        .suggestion:hover { background: #eef5ff; color: var(--blue-dark); cursor: pointer; }
+        .suggestion small { display: block; margin-top: 3px; color: var(--muted); }
+        .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+        button { min-height: 40px; padding: 9px 12px; border: 0; border-radius: 8px; background: var(--blue); color: white; font: inherit; font-weight: 800; cursor: pointer; }
+        button:hover { background: var(--blue-dark); }
+        .delete-button { grid-column: 1 / -1; background: var(--red); }
+        .delete-button:hover { background: #a51d2b; }
+        .table-panel { min-width: 0; overflow: hidden; }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; min-width: 760px; border-collapse: collapse; }
+        th, td { padding: 13px 12px; border: 1px solid var(--line); text-align: left; }
+        th { background: #edf3f8; color: #40536b; font-size: 11px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+        td { color: #26384c; font-size: 13px; font-weight: 500; }
+        .home-row { cursor: pointer; }
+        .home-row:hover { background: #f3f8ff; }
+        .selected-home { background: #dbeafe; outline: 2px solid #8bb7ee; outline-offset: -2px; }
+        @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } }
+        @media (max-width: 520px) { body { padding: 20px 12px; } .panel { padding: 17px; } .form-actions { grid-template-columns: 1fr; } .delete-button { grid-column: auto; } }
+    </style>
+</head>
 
+<body>
+<main class="page">
+
+<nav class="shortcut-bar" aria-label="Page navigation">
+    <a href="/signin"><strong>F1</strong> Sign In</a>
+    <a href="/dashboard"><strong>F2</strong> Dashboard</a>
+</nav>
+
+<header class="page-heading">
+    <p class="eyebrow">Listing workspace</p>
+    <h1>Properties</h1>
+    <p class="subtitle">Manage the homes connected to your open house workflow.</p>
+</header>
+
+<div class="workspace">
+<section class="panel">
+<h2>Add or update a home</h2>
+<div class="address-search">
+    <label for="address-search-input"><strong>Search public addresses</strong></label><br>
+    <input id="address-search-input" type="search" placeholder="Start typing an address..." autocomplete="off">
+    <div id="address-suggestions" class="suggestions" hidden></div>
+</div>
+
+<form method="POST">
+    <input type="hidden" name="home_id" id="home-id">
+    <label>Property ID</label><br>
+    <input type="text" name="property_id"><br>
+
+    <label for="address">Address</label><br>
+    <input id="address" type="text" name="address"><br>
+
+    <label>City</label><br>
+    <input type="text" name="city"><br>
+
+    <label>State</label><br>
+    <input type="text" name="state"><br>
+
+    <label>Zip Code</label><br>
+    <input type="text" name="zip_code"><br>
+
+    <label>Rooms</label><br>
+    <input type="text" name="rooms" placeholder="Example: 3 bed, 2 bath"><br>
+
+    <label>Lot Size</label><br>
+    <input type="text" name="lot_size" placeholder="Example: 0.25 acres"><br>
+
+    <label>
+        <input type="checkbox" name="is_current">
+        Set as Current Home
+    </label><br><br>
+
+    <div class="form-actions">
+        <button id="add-home-button" type="submit" name="action" value="add">Add Home</button>
+        <button type="submit" name="action" value="update">Update Home</button>
+        <button type="submit" name="action" value="delete" class="delete-button" onclick="return confirm('Delete this home?');">Delete Home</button>
+    </div>
+</form>
+</section>
+
+<script>
+    const addressInput = document.getElementById("address-search-input");
+    const addressField = document.getElementById("address");
+    const suggestionList = document.getElementById("address-suggestions");
+    const homeFields = {
+        property_id: document.querySelector('input[name="property_id"]'),
+        address: addressField,
+        city: document.querySelector('input[name="city"]'),
+        state: document.querySelector('input[name="state"]'),
+        zip_code: document.querySelector('input[name="zip_code"]'),
+        rooms: document.querySelector('input[name="rooms"]'),
+        lot_size: document.querySelector('input[name="lot_size"]')
+    };
+    let searchTimer;
+    let searchSequence = 0;
+
+    addressInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        const query = addressInput.value.trim();
+        suggestionList.hidden = true;
+        suggestionList.replaceChildren();
+        if (query.length < 3) return;
+
+        const sequence = ++searchSequence;
+        searchTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`/address_suggestions?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                if (sequence !== searchSequence) return;
+
+                data.results.forEach((result) => {
+                    const option = document.createElement("button");
+                    option.type = "button";
+                    option.className = "suggestion";
+                    const address = document.createElement("span");
+                    address.textContent = result.address || result.display_name;
+                    const details = document.createElement("small");
+                    details.textContent = `${result.city}, ${result.state} ${result.zip_code}`;
+                    option.append(address, details);
+                    option.addEventListener("click", () => {
+                        Object.entries(homeFields).forEach(([name, field]) => {
+                            field.value = result[name] || "";
+                        });
+                        suggestionList.hidden = true;
+                    });
+                    suggestionList.appendChild(option);
+                });
+                suggestionList.hidden = data.results.length === 0;
+            } catch (error) {
+                suggestionList.hidden = true;
+            }
+        }, 300);
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest(".address-search")) suggestionList.hidden = true;
+    });
+</script>
+
+<section class="panel table-panel">
+<h2>Saved properties</h2>
+<div class="table-wrap">
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Property ID</th>
+        <th>Address</th>
+        <th>City</th>
+        <th>State</th>
+        <th>Zip</th>
+        <th>Rooms</th>
+        <th>Lot Size</th>
+        <th>Current</th>
+    </tr>
+
+    {% for h in homes %}
+    <tr class="home-row" data-home-id="{{ h[0] }}" data-property-id="{{ h[1] }}" data-address="{{ h[2] }}" data-city="{{ h[3] }}" data-state="{{ h[4] }}" data-zip-code="{{ h[5] }}" data-rooms="{{ h[6] }}" data-lot-size="{{ h[7] }}" data-current="{{ h[8] }}">
+        <td>{{ h[0] }}</td>
+        <td>{{ h[1] }}</td>
+        <td>{{ h[2] }}</td>
+        <td>{{ h[3] }}</td>
+        <td>{{ h[4] }}</td>
+        <td>{{ h[5] }}</td>
+        <td>{{ h[6] }}</td>
+        <td>{{ h[7] }}</td>
+        <td>{% if h[8] == 1 %}✔{% endif %}</td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+</section>
+</div>
+</main>
+
+<script>
+    const homeId = document.getElementById("home-id");
+    const addHomeButton = document.getElementById("add-home-button");
+    const homeForm = document.querySelector('form[method="POST"]');
+    const homeRows = document.querySelectorAll(".home-row");
+
+    homeRows.forEach((row) => {
+        row.addEventListener("click", () => {
+            homeId.value = row.dataset.homeId;
+            addHomeButton.disabled = true;
+            homeForm.elements.property_id.value = row.dataset.propertyId;
+            homeForm.elements.address.value = row.dataset.address;
+            homeForm.elements.city.value = row.dataset.city;
+            homeForm.elements.state.value = row.dataset.state;
+            homeForm.elements.zip_code.value = row.dataset.zipCode;
+            homeForm.elements.rooms.value = row.dataset.rooms;
+            homeForm.elements.lot_size.value = row.dataset.lotSize;
+            homeForm.elements.is_current.checked = row.dataset.current === "1";
+            homeRows.forEach((item) => item.classList.remove("selected-home"));
+            row.classList.add("selected-home");
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "F1") {
+            event.preventDefault();
+            window.location.href = "/signin";
+        } else if (event.key === "F2") {
+            event.preventDefault();
+            window.location.href = "/dashboard";
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1176,7 +1176,6 @@ if __name__ == "__main__":
     init_agents_table()
     init_open_houses_table()
     init_tasks_table()
-<<<<<<< HEAD
 
 =======
 >>>>>>> b60a27c0bbd5dfebcaeca54f97d8fd63f503ab9f

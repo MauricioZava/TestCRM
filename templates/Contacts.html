@@ -25,12 +25,12 @@
         h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); }
         h2 { margin: 0; font-size: 21px; }
         .subtitle { margin: 8px 0 0; color: var(--muted); }
-        .top-actions, .form-actions, .contact-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+        .top-actions, .contact-actions { display: flex; flex-wrap: wrap; gap: 9px; }
         .button, button { min-height: 40px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; }
         .button:hover, button:hover { filter: brightness(.92); }
         .button.secondary { background: var(--ink); }
         .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
-        .workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr); gap: 22px; align-items: start; }
+        .workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
         .panel { min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
         .panel-header { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
         .panel-intro { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
@@ -51,17 +51,8 @@
         .small-button.edit { background: #f6c177; color: var(--ink); }
         .small-button.delete { background: #fff0f1; color: var(--red); }
         .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
-        .wide { grid-column: 1 / -1; }
-        label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: .03em; }
-        input, select, textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; }
-        textarea { min-height: 82px; resize: vertical; }
-        input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
-        .form-actions { margin-top: 22px; }
-        .form-actions button { flex: 1; }
-        .form-actions .cancel { background: #e7edf1; color: var(--ink); }
-        @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } .workspace { grid-template-columns: 1fr; } }
-        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .form-grid { grid-template-columns: 1fr; } .wide { grid-column: auto; } .contact-row { grid-template-columns: 1fr; } .contact-actions { justify-content: flex-start; } }
+        @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } }
+        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-actions { justify-content: flex-start; } }
     </style>
 </head>
 <body>
@@ -90,12 +81,12 @@
         <section class="panel" aria-labelledby="contact-list-title">
             <div class="panel-header">
                 <div><h2 id="contact-list-title">Your contacts</h2><p class="panel-intro">Visitors saved from your open house sign-ins.</p></div>
-                <span class="count">{{ contacts|length }} contact{% if contacts|length != 1 %}s{% endif %}</span>
+                <div class="top-actions"><span class="count">{{ contacts|length }} contact{% if contacts|length != 1 %}s{% endif %}</span><a class="button" href="{{ url_for('create_contact') }}">New contact</a></div>
             </div>
             {% if contacts %}
             <div class="contact-list">
                 {% for contact in contacts %}
-                <article class="contact-row{% if edit_contact and edit_contact.id == contact.id %} selected{% endif %}"
+                <article class="contact-row"
                     data-search="{{ [contact.name, contact.email]|join(' ')|lower|e }}"
                     data-contact-id="{{ contact.id }}"
                     data-name="{{ (contact.name or '')|e }}"
@@ -108,10 +99,11 @@
                     data-zip-code="{{ (contact.zip_code or '')|e }}"
                     data-heard-about-us="{{ (contact.heard_about_us or '')|e }}"
                     data-working-with-broker="{{ (contact.working_with_broker or 'no')|e }}"
+                    data-agent-name="{{ (contact.agent_name or '')|e }}"
                     data-notes="{{ (contact.notes or '')|e }}">
                     <div class="contact-main">
                         <span class="contact-name">{{ contact.name }}</span>
-                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span><span class="badge">{{ contact.visitor_type }}</span></div>
+                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span><span class="badge">{{ contact.visitor_type }}</span><span>Agent: {{ contact.agent_name or "Unassigned" }}</span></div>
                         <p class="contact-note">{{ contact.notes or "No notes yet" }}</p>
                         <div class="contact-actions">
                             <a class="button small-button" href="{{ url_for('tasks', contact_id=contact.id) }}">Create task</a>
@@ -126,32 +118,10 @@
                 {% endfor %}
             </div>
             {% else %}
-            <div class="empty-state">No contacts yet. Add your first contact from the form.</div>
+            <div class="empty-state">No contacts yet.</div>
             {% endif %}
         </section>
 
-        <section class="panel" aria-labelledby="contact-form-title">
-            <div class="panel-header">
-                <div><h2 id="contact-form-title">{% if edit_contact %}Edit contact{% else %}Add a contact{% endif %}</h2><p class="panel-intro" id="contact-form-intro">{% if edit_contact %}Update details and recalculate the lead score.{% else %}Create a contact directly, even when they did not come through an open house.{% endif %}</p></div>
-                <button class="button ghost small-button" id="new-contact-button" type="button">New contact</button>
-            </div>
-            <form id="contact-form" method="post" action="{% if edit_contact %}{{ url_for('edit_contact', signin_id=edit_contact.id) }}{% else %}{{ url_for('create_contact') }}{% endif %}">
-                <div class="form-grid">
-                    <div class="wide"><label for="name">Full name *</label><input id="name" name="name" value="{{ edit_contact.name if edit_contact else '' }}" required></div>
-                    <div><label for="email">Email *</label><input id="email" name="email" type="email" value="{{ edit_contact.email if edit_contact else '' }}" required></div>
-                    <div><label for="phone">Phone</label><input id="phone" name="phone" value="{{ edit_contact.phone if edit_contact else '' }}"></div>
-                    <div><label for="visitor_type">Contact type</label><select id="visitor_type" name="visitor_type">{% for value, label in [("buyer", "Buyer"), ("seller", "Seller"), ("neighbor", "Neighbor"), ("just-looking", "Just looking")] %}<option value="{{ value }}" {% if edit_contact and edit_contact.visitor_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-                    <div><label for="currently">Currently</label><select id="currently" name="currently"><option value="renting" {% if edit_contact and edit_contact.currently == "renting" %}selected{% endif %}>Renting</option><option value="own" {% if edit_contact and edit_contact.currently == "own" %}selected{% endif %}>Own</option></select></div>
-                    <div><label for="timeline">Timeline</label><select id="timeline" name="timeline"><option value="0-3" {% if edit_contact and edit_contact.timeline == "0-3" %}selected{% endif %}>0-3 months</option><option value="3-6" {% if edit_contact and edit_contact.timeline == "3-6" %}selected{% endif %}>3-6 months</option><option value="6-12" {% if edit_contact and edit_contact.timeline == "6-12" %}selected{% endif %}>6-12 months</option><option value="browsing" {% if not edit_contact or edit_contact.timeline == "browsing" %}selected{% endif %}>Just browsing</option></select></div>
-                    <div><label for="preapproval">Pre-approval</label><select id="preapproval" name="preapproval"><option value="yes" {% if edit_contact and edit_contact.preapproval == "yes" %}selected{% endif %}>Yes</option><option value="no" {% if edit_contact and edit_contact.preapproval == "no" %}selected{% endif %}>No</option><option value="unknown" {% if not edit_contact or edit_contact.preapproval == "unknown" %}selected{% endif %}>Not sure</option></select></div>
-                    <div><label for="zip_code">ZIP code</label><input id="zip_code" name="zip_code" value="{{ edit_contact.zip_code if edit_contact else '' }}"></div>
-                    <div><label for="heard_about_us">Source</label><input id="heard_about_us" name="heard_about_us" value="{{ edit_contact.heard_about_us if edit_contact else '' }}" placeholder="Referral, website, event..."></div>
-                    <div><label for="working_with_broker">Working with broker</label><select id="working_with_broker" name="working_with_broker"><option value="no" {% if not edit_contact or edit_contact.working_with_broker != "yes" %}selected{% endif %}>No</option><option value="yes" {% if edit_contact and edit_contact.working_with_broker == "yes" %}selected{% endif %}>Yes</option></select></div>
-                    <div class="wide"><label for="notes">Notes</label><textarea id="notes" name="notes" placeholder="Conversation notes, preferences, or next steps...">{{ edit_contact.notes if edit_contact else '' }}</textarea></div>
-                </div>
-                <div class="form-actions"><button type="submit">{% if edit_contact %}Save changes{% else %}Add contact{% endif %}</button>{% if edit_contact %}<a class="button cancel" href="{{ url_for('contacts') }}">Cancel</a>{% endif %}</div>
-            </form>
-        </section>
     </div>
 </main>
 <script>
@@ -159,45 +129,8 @@
     const searchClear = document.getElementById("search-clear");
     const searchCount = document.getElementById("search-count");
     const contactRows = [...document.querySelectorAll(".contact-row")];
-    const contactForm = document.getElementById("contact-form");
-    const newContactButton = document.getElementById("new-contact-button");
-    const formTitle = document.getElementById("contact-form-title");
-    const formIntro = document.getElementById("contact-form-intro");
     let matchingRows = [];
     let activeMatch = -1;
-
-    function setFormValue(fieldName, value) {
-        contactForm.elements[fieldName].value = value || "";
-    }
-
-    function selectContact(row) {
-        ["name", "email", "phone", "visitor_type", "currently", "timeline", "preapproval", "zip_code", "heard_about_us", "working_with_broker", "notes"].forEach((fieldName) => {
-            const dataName = fieldName.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-            setFormValue(fieldName, row.dataset[dataName]);
-        });
-        contactForm.action = `/contacts/${row.dataset.contactId}`;
-        formTitle.textContent = "Edit contact";
-        formIntro.textContent = "Update details and recalculate the lead score.";
-        document.querySelectorAll(".contact-row.selected").forEach((selectedRow) => selectedRow.classList.remove("selected"));
-        row.classList.add("selected");
-    }
-
-    function startNewContact() {
-        contactForm.reset();
-        contactForm.action = "{{ url_for('create_contact') }}";
-        formTitle.textContent = "Add a contact";
-        formIntro.textContent = "Create a contact directly, even when they did not come through an open house.";
-        document.querySelectorAll(".contact-row.selected").forEach((selectedRow) => selectedRow.classList.remove("selected"));
-    }
-
-    contactRows.forEach((row) => {
-        row.addEventListener("click", (event) => {
-            if (event.target.closest("a")) return;
-            selectContact(row);
-        });
-    });
-
-    newContactButton.addEventListener("click", startNewContact);
 
     function escapeHtml(value) {
         return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;" })[character]);

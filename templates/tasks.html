@@ -6,28 +6,29 @@
     <title>Tasks</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --ink: #172033; --muted: #66748a; --line: #d9e1ea; --paper: #fff; --canvas: #e8edf3; --blue: #2563c7; --blue-dark: #194c9d; --green: #287d68; --red: #c82333; }
+        :root { --ink: #172033; --muted: #66748a; --line: #d9e1ea; --paper: #fff; --canvas: #e8edf3; --blue: #2563c7; --blue-dark: #194c9d; --green: #287d68; --red: #c82333; --gold: #d9922e; }
         * { box-sizing: border-box; }
-        body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
         .page { max-width: 1320px; margin: 0 auto; }
+        .shortcut-bar { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 30px; }
+        .shortcut-bar a { padding: 9px 13px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.75); color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; }
+        .shortcut-bar a:hover, .shortcut-bar a.active { border-color: var(--blue); color: var(--blue); }
         .page-header { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
-        .eyebrow { margin: 0 0 7px; color: var(--green); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+        .eyebrow { margin: 0 0 7px; color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
         h1, h2 { font-family: "Space Grotesk", Arial, sans-serif; }
         h1 { margin: 0; font-size: clamp(30px, 4vw, 42px); letter-spacing: -.04em; }
         h2 { margin: 0 0 5px; font-size: 21px; }
         .subtitle, .panel-intro { margin: 8px 0 0; color: var(--muted); }
-        .back-link { padding: 10px 14px; border-radius: 8px; background: var(--ink); color: #fff; text-decoration: none; font-size: 13px; font-weight: 800; white-space: nowrap; }
-        .workspace { display: grid; grid-template-columns: minmax(300px, 410px) minmax(0, 1fr); gap: 22px; align-items: start; }
-        .panel { padding: 23px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.95); box-shadow: 0 12px 30px rgba(23,32,51,.08); }
+        .workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
+        .panel { padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
         .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
         .wide { grid-column: 1 / -1; }
         label { display: block; margin: 14px 0 5px; color: var(--ink); font-size: 12px; font-weight: 800; }
-        input, select, textarea { width: 100%; min-height: 41px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; }
+        input, select, textarea { width: 100%; min-height: 41px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; }
         textarea { min-height: 90px; resize: vertical; }
         input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
         .selected-client { margin-top: 16px; padding: 12px; border: 1px solid #c7dfd5; border-radius: 9px; background: #f1fbf6; color: var(--green); font-size: 13px; font-weight: 700; }
         .selected-client strong { display: block; margin-bottom: 3px; font-size: 15px; }
-        .selected-task { margin-bottom: 12px; padding: 9px 11px; border: 1px solid #b9d3e6; border-radius: 8px; background: #eef7fd; color: #326f9f; font-size: 12px; font-weight: 800; }
         .follow-up-group { grid-column: 1 / -1; margin-top: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: #f8fbfd; }
         .follow-up-group h3 { margin: 0 0 4px; font-family: "Space Grotesk", Arial, sans-serif; font-size: 16px; }
         .follow-up-help { margin: 0 0 10px; color: var(--muted); font-size: 12px; }
@@ -35,46 +36,38 @@
         .follow-up-option:first-of-type { border-top: 0; }
         .checkbox-label { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 13px; }
         .checkbox-label input { width: 18px; min-height: 18px; margin: 0; accent-color: var(--blue); }
+        .follow-up-note { margin: 9px 0 0 27px; min-height: 78px; }
         .delivery-options { display: none; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; margin-top: 9px; padding-left: 27px; }
         .follow-up-option.selected .delivery-options { display: grid; }
         .delivery-options label { margin: 0; font-size: 11px; }
         .send-now-label { display: flex; align-items: center; gap: 5px; min-height: 41px; white-space: nowrap; }
         .send-now-label input { width: 17px; min-height: 17px; margin: 0; accent-color: var(--green); }
-        button { min-height: 41px; padding: 9px 13px; border: 0; border-radius: 8px; background: var(--blue); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
+        button { min-height: 41px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-weight: 800; cursor: pointer; }
         button:hover { background: var(--blue-dark); }
         button:disabled { background: #a9b4c3; color: #eef2f5; cursor: not-allowed; box-shadow: none; }
         .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
         .cancel-button { background: #e7edf1; color: var(--ink); }
         .cancel-button:hover { background: #d5e0e7; }
-        .table-panel { min-width: 0; overflow: hidden; }
-        .table-wrap { overflow-x: auto; margin-top: 20px; }
-        table { width: 100%; min-width: 760px; border-collapse: collapse; }
-        th, td { padding: 13px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
-        th { background: #f4f7f9; color: #4d5b70; font-size: 11px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
-        td { color: #26384c; font-size: 13px; }
-        .task-row { cursor: pointer; }
-        .task-row:hover { background: #f3f8ff; }
-        .selected-task-row { background: #eaf2ff; outline: 2px solid #8bb7ee; outline-offset: -2px; }
-        .row-delete { padding: 7px 10px; border-radius: 7px; background: var(--red); color: #fff; font-size: 12px; text-decoration: none; white-space: nowrap; }
-        .row-delete:hover { background: #a51d2b; }
-        .client-name { color: var(--ink); font-weight: 800; }
-        .muted { color: var(--muted); }
-        .status, .priority { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: var(--blue-dark); font-size: 11px; font-weight: 900; }
-        .priority { background: #fff4df; color: #9a6500; }
-        .empty-state { padding: 35px 12px; color: var(--muted); text-align: center; }
         @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } }
         @media (max-width: 560px) { body { padding: 22px 12px; } .page-header { align-items: flex-start; flex-direction: column; } .form-grid { grid-template-columns: 1fr; } .wide { grid-column: auto; } .form-actions { justify-content: stretch; } .form-actions button { flex: 1; } }
     </style>
 </head>
 <body>
 <main class="page">
+    <nav class="shortcut-bar" aria-label="Page navigation">
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('properties') }}">Properties</a>
+        <a href="{{ url_for('agents') }}">Agents</a>
+        <a href="{{ url_for('contacts') }}">Contacts</a>
+        <a class="active" href="{{ url_for('tasks') }}">Tasks</a>
+    </nav>
+
     <header class="page-header">
         <div>
             <p class="eyebrow">Client follow-up</p>
             <h1>Tasks</h1>
             <p class="subtitle">Create a clear next action for the client selected from Contacts.</p>
         </div>
-        <a class="back-link" href="{{ url_for('contacts') }}">Back to Contacts</a>
     </header>
 
     <div class="workspace">
@@ -82,26 +75,39 @@
             <h2>Create task</h2>
             <p class="panel-intro">The selected client is saved with every task.</p>
             <form id="task-form" method="post" action="{{ url_for('create_task') }}">
-                <input type="hidden" name="task_id" id="task-id">
-                <div class="selected-task" id="selected-task" hidden>Editing selected task</div>
                 <div class="form-grid">
                     <div class="field wide">
                         <label for="signin-id">Client *</label>
                         <select id="signin-id" name="signin_id" required>
                             <option value="">Select a client</option>
                             {% for contact in contacts %}
-                            <option value="{{ contact.id }}" {% if selected_contact and selected_contact.id == contact.id %}selected{% endif %}>{{ contact.name }}{% if contact.email %} - {{ contact.email }}{% endif %}</option>
+                            <option value="{{ contact.id }}" data-agent-id="{{ contact.agent_id or '' }}" {% if selected_contact and selected_contact.id == contact.id %}selected{% endif %}>{{ contact.name }}{% if contact.email %} - {{ contact.email }}{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="field wide">
+                        <label for="agent-id">Agent</label>
+                        <select id="agent-id" name="agent_id">
+                            <option value="">Select an agent</option>
+                            {% for agent in agents %}
+                            <option value="{{ agent[0] }}">{{ agent[1] }}{% if agent[2] %} {{ agent[2] }}{% endif %} {{ agent[3] }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="field"><label for="priority">Priority</label><select id="priority" name="priority"><option>Normal</option><option>High</option><option>Low</option></select></div>
                     <div class="field wide"><label for="status">Status</label><select id="status" name="status"><option>Open</option><option>In Progress</option><option>Completed</option></select></div>
-                    <div class="field wide"><label for="notes">Notes</label><textarea id="notes" name="notes" placeholder="Add context for this client task"></textarea></div>
                     <div class="follow-up-group">
                         <h3>Follow-up actions</h3>
                         <p class="follow-up-help">Choose one or both messages. Each selected action can be sent now or scheduled.</p>
                         <div class="follow-up-option">
                             <label class="checkbox-label"><input type="checkbox" name="thank_you_selected"> Send thank you for visiting</label>
+                            <textarea class="follow-up-note" name="thank_you_notes">Thank you so much for visiting the open house today. It was a pleasure having you stop by, and I truly appreciate you taking the time to explore the property.
+
+If you have any questions about the home, would like additional details, or want to schedule a private showing, feel free to reach out anytime. I’m here to help with anything you need.
+
+Looking forward to connecting with you.
+
+Warm regards,</textarea>
                             <div class="delivery-options">
                                 <label>Date<input name="thank_you_date" type="date"></label>
                                 <label>Time<input name="thank_you_time" type="time"></label>
@@ -110,6 +116,7 @@
                         </div>
                         <div class="follow-up-option">
                             <label class="checkbox-label"><input type="checkbox" name="follow_up_selected"> Send follow-up email</label>
+                            <textarea class="follow-up-note" name="follow_up_notes" placeholder="Write the follow-up message to send..."></textarea>
                             <div class="delivery-options">
                                 <label>Date<input name="follow_up_date" type="date"></label>
                                 <label>Time<input name="follow_up_time" type="time"></label>
@@ -118,6 +125,7 @@
                         </div>
                         <div class="follow-up-option">
                             <label class="checkbox-label"><input type="checkbox" name="notes_email_selected"> Send email from notes</label>
+                            <textarea class="follow-up-note" name="notes_email_notes" placeholder="Write the message to send from this selection..."></textarea>
                             <div class="delivery-options">
                                 <label>Date<input name="notes_email_date" type="date"></label>
                                 <label>Time<input name="notes_email_time" type="time"></label>
@@ -131,40 +139,10 @@
                 {% endif %}
                 <div class="form-actions">
                     <button class="cancel-button" type="reset">Clear</button>
-                    <button type="submit" name="action" value="create" id="create-task-button">Create Task</button>
-                    <button type="submit" name="action" value="update" id="update-task-button" disabled>Update Task</button>
+                    <button type="submit" name="action" value="create">Create Task</button>
+                    <button type="submit" name="action" value="send_email">Send Email</button>
                 </div>
             </form>
-        </section>
-
-        <section class="panel table-panel">
-            <h2>Saved tasks</h2>
-            <p class="panel-intro">Tasks remain connected to their selected client.</p>
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>Client</th><th>Task</th><th>Priority</th><th>Status</th><th>Follow-up</th><th>Notes</th><th>Actions</th></tr></thead>
-                    <tbody>
-                    {% for task in tasks %}
-                    <tr class="task-row"
-                        data-task-id="{{ task.id }}" data-signin-id="{{ task.signin_id }}"
-                        data-priority="{{ task.priority }}" data-status="{{ task.status }}" data-notes="{{ task.notes or '' }}"
-                        data-thank-you-selected="{{ '1' if task.thank_you_selected else '0' }}" data-thank-you-date="{{ task.thank_you_date or '' }}" data-thank-you-time="{{ task.thank_you_time or '' }}" data-thank-you-send-now="{{ '1' if task.thank_you_send_now else '0' }}"
-                        data-follow-up-selected="{{ '1' if task.follow_up_selected else '0' }}" data-follow-up-date="{{ task.follow_up_date or '' }}" data-follow-up-time="{{ task.follow_up_time or '' }}" data-follow-up-send-now="{{ '1' if task.follow_up_send_now else '0' }}"
-                        data-notes-email-selected="{{ '1' if task.notes_email_selected else '0' }}" data-notes-email-date="{{ task.notes_email_date or '' }}" data-notes-email-time="{{ task.notes_email_time or '' }}" data-notes-email-send-now="{{ '1' if task.notes_email_send_now else '0' }}">
-                        <td><span class="client-name">{{ task.client_name }}</span><span class="muted"><br>{{ task.client_email or "No email" }}</span></td>
-                        <td>{{ task.title }}</td>
-                        <td><span class="priority">{{ task.priority }}</span></td>
-                        <td><span class="status">{{ task.status }}</span></td>
-                        <td>{% if task.thank_you_selected %}Thank you{% if task.thank_you_send_now %} now{% else %} {{ task.thank_you_date or "scheduled" }}{% endif %}{% endif %}{% if task.thank_you_selected and (task.follow_up_selected or task.notes_email_selected) %}<br>{% endif %}{% if task.follow_up_selected %}Follow-up{% if task.follow_up_send_now %} now{% else %} {{ task.follow_up_date or "scheduled" }}{% endif %}{% endif %}{% if task.follow_up_selected and task.notes_email_selected %}<br>{% endif %}{% if task.notes_email_selected %}Notes email{% if task.notes_email_send_now %} now{% else %} {{ task.notes_email_date or "scheduled" }}{% endif %}{% endif %}{% if not task.thank_you_selected and not task.follow_up_selected and not task.notes_email_selected %}-{% endif %}</td>
-                        <td>{{ task.notes or "-" }}</td>
-                        <td><form method="post" action="{{ url_for('delete_task', task_id=task.id) }}" onsubmit="return confirm('Delete this task?');"><button class="row-delete" type="submit">Delete</button></form></td>
-                    </tr>
-                    {% else %}
-                    <tr><td class="empty-state" colspan="7">No tasks have been created yet.</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
         </section>
     </div>
 </main>
@@ -187,70 +165,18 @@
     });
 
     const taskForm = document.getElementById("task-form");
-    const taskId = document.getElementById("task-id");
-    const selectedTask = document.getElementById("selected-task");
-    const updateTaskButton = document.getElementById("update-task-button");
-    const createTaskButton = document.getElementById("create-task-button");
-    let originalTaskState = null;
 
-    function getTaskFormState() {
-        return Array.from(taskForm.elements)
-            .filter((field) => field.name && field.name !== "task_id" && field.type !== "submit" && field.type !== "reset")
-            .map((field) => `${field.name}:${field.type === "checkbox" ? field.checked : field.value}`)
-            .join("|");
+    const signinSelect = document.getElementById("signin-id");
+    const agentSelect = document.getElementById("agent-id");
+
+    function applyAgentFromContact() {
+        const selectedOption = signinSelect.options[signinSelect.selectedIndex];
+        const agentId = selectedOption ? selectedOption.dataset.agentId : "";
+        agentSelect.value = agentId || "";
     }
 
-    function updateTaskButtonState() {
-        updateTaskButton.disabled = !taskId.value || !originalTaskState || getTaskFormState() === originalTaskState;
-    }
-
-    document.querySelectorAll(".task-row").forEach((row) => {
-        row.addEventListener("click", () => {
-            taskId.value = row.dataset.taskId;
-            taskForm.elements.signin_id.value = row.dataset.signinId;
-            taskForm.elements.priority.value = row.dataset.priority;
-            taskForm.elements.status.value = row.dataset.status;
-            taskForm.elements.notes.value = row.dataset.notes;
-            [
-                ["thank_you", "thankYou"], ["follow_up", "followUp"], ["notes_email", "notesEmail"]
-            ].forEach(([fieldPrefix, dataPrefix]) => {
-                const name = `${fieldPrefix}_selected`;
-                const option = taskForm.elements[name];
-                option.checked = row.dataset[`${dataPrefix}Selected`] === "1";
-                option.closest(".follow-up-option").classList.toggle("selected", option.checked);
-                taskForm.elements[`${fieldPrefix}_date`].value = row.dataset[`${dataPrefix}Date`];
-                taskForm.elements[`${fieldPrefix}_time`].value = row.dataset[`${dataPrefix}Time`];
-                taskForm.elements[`${fieldPrefix}_send_now`].checked = row.dataset[`${dataPrefix}SendNow`] === "1";
-                const scheduleFields = option.closest(".follow-up-option").querySelectorAll('.delivery-options input[type="date"], .delivery-options input[type="time"]');
-                scheduleFields.forEach((field) => field.disabled = taskForm.elements[`${fieldPrefix}_send_now`].checked);
-            });
-            selectedTask.hidden = false;
-            originalTaskState = getTaskFormState();
-            updateTaskButtonState();
-            createTaskButton.disabled = true;
-            document.querySelectorAll(".task-row").forEach((item) => item.classList.remove("selected-task-row"));
-            row.classList.add("selected-task-row");
-        });
-    });
-
-    taskForm.addEventListener("reset", () => {
-        window.setTimeout(() => {
-            taskId.value = "";
-            selectedTask.hidden = true;
-            originalTaskState = null;
-            updateTaskButton.disabled = true;
-            createTaskButton.disabled = false;
-            document.querySelectorAll(".task-row").forEach((item) => item.classList.remove("selected-task-row"));
-        }, 0);
-    });
-
-    taskForm.addEventListener("input", updateTaskButtonState);
-    taskForm.addEventListener("change", updateTaskButtonState);
-    taskForm.addEventListener("submit", (event) => {
-        if (event.submitter && event.submitter.value === "update" && updateTaskButton.disabled) {
-            event.preventDefault();
-        }
-    });
+    signinSelect.addEventListener("change", applyAgentFromContact);
+    applyAgentFromContact();
 </script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Contact | Lead Workspace</title>
+    <title>{% if is_new %}New Contact{% else %}Edit Contact{% endif %} | Lead Workspace</title>
     <style>
         :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; }
         * { box-sizing: border-box; }
@@ -24,9 +24,9 @@
 </head>
 <body>
     <main class="container">
-        <h1>Edit Contact</h1>
-        <p class="intro">Update contact details and save the latest lead information.</p>
-        <form method="post">
+        <h1>{% if is_new %}New Contact{% else %}Edit Contact{% endif %}</h1>
+        <p class="intro">{% if is_new %}Add a contact and save their lead information.{% else %}Update contact details and save the latest lead information.{% endif %}</p>
+        <form method="post" action="{% if is_new %}{{ url_for('create_contact') }}{% endif %}">
             <label for="name">Name</label>
             <input id="name" type="text" name="name" value="{{ contact.name }}" required>
 
@@ -35,6 +35,14 @@
 
             <label for="phone">Phone</label>
             <input id="phone" type="tel" name="phone" value="{{ contact.phone }}" autocomplete="tel">
+
+            <label for="agent-id">Hosted By</label>
+            <select id="agent-id" name="agent_id">
+                <option value="">Unassigned</option>
+                {% for agent in agents %}
+                <option value="{{ agent[0] }}" {% if contact.agent_id == agent[0] %}selected{% endif %}>{{ agent[1] }}{% if agent[2] %} {{ agent[2] }}{% endif %} {{ agent[3] }}</option>
+                {% endfor %}
+            </select>
 
             <label for="visitor_type">Visitor Type</label>
             <select id="visitor_type" name="visitor_type" required>
@@ -64,11 +72,11 @@
                 <option value="unknown" {% if contact.preapproval == "unknown" %}selected{% endif %}>Not sure</option>
             </select>
 
-            <label for="notes">Notes</label>
+            <label for="notes">Thank you for visiting message:</label>
             <textarea id="notes" name="notes" rows="5">{{ contact.notes }}</textarea>
 
             <div class="actions">
-                <button type="submit">Save Contact</button>
+                <button type="submit">{% if is_new %}Create Contact{% else %}Save Contact{% endif %}</button>
                 <a href="{{ url_for('contacts') }}">Cancel</a>
             </div>
         </form>

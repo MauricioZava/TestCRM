@@ -232,6 +232,10 @@
         <p class="intro">Tell us a little about your plans, and we will follow up with the details that matter to you.</p>
 
         <form method="post">
+            {% if open_house %}
+            <input type="hidden" name="agent_id" value="{{ open_house.agent_id }}">
+            <input type="hidden" name="open_house_id" value="{{ open_house.id }}">
+            {% endif %}
             <div class="eyebrow">Guest details</div>
             <h2 class="form-heading">Tell us about yourself</h2>
 

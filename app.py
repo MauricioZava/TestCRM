@@ -15,7 +15,9 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 
 from flask import Flask
 app = Flask(__name__)
-DB_NAME = "database.db"
+app.config["TEMPLATES_AUTO_RELOAD"] = True
+app.jinja_env.auto_reload = True
+DB_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "database.db")
 
 # -----------------------------
 # SMTP CONFIGURATION
@@ -36,7 +38,7 @@ task_scheduler_lock = threading.Lock()
 from flask import render_template
 @app.route("/")
 def index():
-    return render_template("dashboard.html")
+    return redirect(url_for("dashboard"))
 
 
 
@@ -161,9 +163,10 @@ def init_homes_table():
         )
     """)
     existing_columns = {row[1] for row in c.execute("PRAGMA table_info(homes)").fetchall()}
-    for column in ("rooms", "lot_size"):
+    for column in ("rooms", "lot_size", "agent_id"):
         if column not in existing_columns:
-            c.execute(f"ALTER TABLE homes ADD COLUMN {column} TEXT")
+            column_type = "INTEGER" if column == "agent_id" else "TEXT"
+            c.execute(f"ALTER TABLE homes ADD COLUMN {column} {column_type}")
     conn.commit()
     conn.close()
 
@@ -214,10 +217,10 @@ def init_tasks_table():
         "thank_you_selected", "thank_you_date", "thank_you_time", "thank_you_send_now",
         "follow_up_selected", "follow_up_date", "follow_up_time", "follow_up_send_now",
         "notes_email_selected", "notes_email_date", "notes_email_time", "notes_email_send_now",
-        "thank_you_sent", "follow_up_sent", "notes_email_sent"
+        "thank_you_sent", "follow_up_sent", "notes_email_sent", "agent_id"
     ):
         if column not in existing_columns:
-            column_type = "INTEGER DEFAULT 0" if column.endswith("selected") or column.endswith("send_now") or column.endswith("sent") else "TEXT"
+            column_type = "INTEGER DEFAULT 0" if column.endswith("selected") or column.endswith("send_now") or column.endswith("sent") else "INTEGER" if column == "agent_id" else "TEXT"
             c.execute(f"ALTER TABLE tasks ADD COLUMN {column} {column_type}")
     conn.commit()
     conn.close()
@@ -304,6 +307,29 @@ def init_open_houses_table():
     conn.commit()
     conn.close()
 
+def backfill_signin_open_houses():
+    conn = sqlite3.connect(DB_NAME)
+    conn.execute("""
+        UPDATE signins
+        SET open_house_id = (
+            SELECT id FROM open_houses
+            WHERE status = 'Scheduled'
+            ORDER BY event_date ASC, start_time ASC
+            LIMIT 1
+        )
+        WHERE open_house_id IS NULL
+    """)
+    conn.execute("""
+        UPDATE signins
+        SET agent_id = (
+            SELECT agent_id FROM open_houses
+            WHERE open_houses.id = signins.open_house_id
+        )
+        WHERE agent_id IS NULL AND open_house_id IS NOT NULL
+    """)
+    conn.commit()
+    conn.close()
+
 @app.route("/generate-open-house", methods=["GET", "POST"])
 def generate_open_house():
     conn = sqlite3.connect(DB_NAME)
@@ -311,7 +337,7 @@ def generate_open_house():
 
     if request.method == "POST":
         action = request.form.get("action", "new")
-        open_house_id = request.form.get("open_house_id")
+        open_house_id = request.form.get("open_house_id", type=int)
 
         if action == "delete" and open_house_id:
             c.execute("DELETE FROM open_houses WHERE id = ?", (open_house_id,))
@@ -331,6 +357,10 @@ def generate_open_house():
                 "public_notes", "internal_notes"
             )
         ]
+
+        if not fields[0] or not fields[1] or not fields[2] or not fields[3] or not fields[4]:
+            conn.close()
+            return "Home, hosting agent, date, start time, and end time are required.", 400
 
         if action == "update":
             c.execute("""
@@ -379,8 +409,8 @@ def generate_open_house():
                h.property_id, h.address, h.city, h.state, h.zip_code,
                a.first_name, a.middle_name, a.last_name, a.brokerage
         FROM open_houses oh
-        JOIN homes h ON h.id = oh.home_id
-        JOIN agents a ON a.id = oh.agent_id
+        LEFT JOIN homes h ON h.id = oh.home_id
+        LEFT JOIN agents a ON a.id = oh.agent_id
         ORDER BY oh.event_date DESC, oh.start_time DESC
     """)
     open_houses = [
@@ -506,6 +536,7 @@ def properties():
         zip_code = request.form.get("zip_code")
         rooms = request.form.get("rooms")
         lot_size = request.form.get("lot_size")
+        agent_id = request.form.get("agent_id", type=int)
         is_current = 1 if request.form.get("is_current") == "on" else 0
 
         # If this home is marked current, unset all others
@@ -515,25 +546,30 @@ def properties():
         if action == "update" and home_id:
             c.execute("""
                 UPDATE homes
-                SET property_id = ?, address = ?, city = ?, state = ?, zip_code = ?, rooms = ?, lot_size = ?, is_current = ?
+                SET property_id = ?, agent_id = ?, address = ?, city = ?, state = ?, zip_code = ?, rooms = ?, lot_size = ?, is_current = ?
                 WHERE id = ?
-            """, (property_id, address, city, state, zip_code, rooms, lot_size, is_current, home_id))
+            """, (property_id, agent_id, address, city, state, zip_code, rooms, lot_size, is_current, home_id))
         else:
             c.execute("""
-                INSERT INTO homes (property_id, address, city, state, zip_code, rooms, lot_size, is_current)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (property_id, address, city, state, zip_code, rooms, lot_size, is_current))
+                INSERT INTO homes (property_id, agent_id, address, city, state, zip_code, rooms, lot_size, is_current)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (property_id, agent_id, address, city, state, zip_code, rooms, lot_size, is_current))
 
         conn.commit()
         conn.close()
         return redirect(url_for("properties"))
 
     # Load homes list
-    c.execute("SELECT id, property_id, address, city, state, zip_code, rooms, lot_size, is_current FROM homes")
+    c.execute("SELECT id, property_id, agent_id, address, city, state, zip_code, rooms, lot_size, is_current FROM homes")
     homes = c.fetchall()
+    c.execute("SELECT id, first_name, middle_name, last_name FROM agents ORDER BY last_name, first_name")
+    agents = [
+        {"id": row[0], "first_name": row[1], "middle_name": row[2], "last_name": row[3]}
+        for row in c.fetchall()
+    ]
     conn.close()
 
-    return render_template("properties.html", homes=homes)
+    return render_template("properties.html", homes=homes, agents=agents)
 
 
 @app.route("/address_suggestions")
@@ -604,9 +640,9 @@ def init_db():
         )
     """)
     existing_columns = {row[1] for row in c.execute("PRAGMA table_info(signins)").fetchall()}
-    for column in ("working_with_broker", "zip_code", "heard_about_us", "is_contact", "dashboard_hidden"):
+    for column in ("working_with_broker", "zip_code", "heard_about_us", "is_contact", "dashboard_hidden", "agent_id", "open_house_id"):
         if column not in existing_columns:
-            column_type = "INTEGER DEFAULT 0" if column == "is_contact" else "TEXT"
+            column_type = "INTEGER" if column in ("agent_id", "open_house_id") else "INTEGER DEFAULT 0" if column == "is_contact" else "TEXT"
             if column == "dashboard_hidden":
                 column_type = "INTEGER DEFAULT 0"
             c.execute(f"ALTER TABLE signins ADD COLUMN {column} {column_type}")
@@ -712,6 +748,8 @@ def signin():
         timeline = request.form.get("timeline", "").strip()
         preapproval = request.form.get("preapproval", "").strip()
         notes = request.form.get("notes", "").strip()
+        submitted_agent_id = request.form.get("agent_id", type=int)
+        submitted_open_house_id = request.form.get("open_house_id", type=int)
 
         motivation_score, followup_message, next_steps_json = categorize_and_score(
             visitor_type, timeline, preapproval, notes, currently
@@ -719,15 +757,42 @@ def signin():
 
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
+        open_house_id = submitted_open_house_id
+        agent_id = None
+        if open_house_id:
+            c.execute("""
+                SELECT agent_id
+                FROM open_houses
+                WHERE id = ? AND status = 'Scheduled'
+            """, (open_house_id,))
+            selected_open_house = c.fetchone()
+            if selected_open_house:
+                agent_id = selected_open_house[0]
+            else:
+                open_house_id = None
+
+        if not open_house_id:
+            c.execute("""
+                SELECT id, agent_id
+                FROM open_houses
+                WHERE status = 'Scheduled'
+                ORDER BY event_date ASC, start_time ASC
+                LIMIT 1
+            """)
+            open_house_row = c.fetchone()
+            if open_house_row:
+                open_house_id, agent_id = open_house_row
+
+        agent_id = agent_id or submitted_agent_id
         c.execute("""
             INSERT INTO signins (
                 name, email, phone, visitor_type, currently, working_with_broker,
-                zip_code, heard_about_us, timeline, preapproval, notes,
+                zip_code, heard_about_us, timeline, preapproval, notes, agent_id, open_house_id,
                 motivation_score, followup_message, next_steps_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             name, email, phone, visitor_type, currently, working_with_broker,
-            zip_code, heard_about_us, timeline, preapproval, notes,
+            zip_code, heard_about_us, timeline, preapproval, notes, agent_id, open_house_id,
             motivation_score, followup_message, next_steps_json
         ))
         conn.commit()
@@ -739,9 +804,9 @@ def signin():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
-         SELECT oh.event_date, oh.start_time, oh.end_time,
+                 SELECT oh.id, oh.event_date, oh.start_time, oh.end_time,
              h.address, h.city, h.state, h.zip_code,
-               a.first_name, a.middle_name, a.last_name
+                             a.first_name, a.middle_name, a.last_name, oh.agent_id
         FROM open_houses oh
         JOIN homes h ON h.id = oh.home_id
         JOIN agents a ON a.id = oh.agent_id
@@ -754,12 +819,14 @@ def signin():
 
     open_house = None
     if row:
-        agent_name = " ".join(part for part in row[7:10] if part)
+        agent_name = " ".join(part for part in row[8:11] if part)
         open_house = {
-            "date": row[0],
-            "time": f"{row[1]} - {row[2]}",
-            "address": f"{row[3]}, {row[4]}, {row[5]} {row[6]}",
+            "id": row[0],
+            "date": row[1],
+            "time": f"{row[2]} - {row[3]}",
+            "address": f"{row[4]}, {row[5]}, {row[6]} {row[7]}",
             "agent_name": agent_name,
+            "agent_id": row[11] if len(row) > 11 else None,
         }
 
     return render_template("signin.html", open_house=open_house)
@@ -773,13 +840,25 @@ def dashboard():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
-         SELECT id, name, email, phone, visitor_type, currently,
-             working_with_broker, zip_code, heard_about_us, is_contact, dashboard_hidden, timeline,
-             preapproval, notes, motivation_score, followup_message,
-             next_steps_json, created_at
+         SELECT signins.id, signins.name, signins.email, signins.phone, signins.visitor_type, signins.currently,
+             signins.working_with_broker, signins.zip_code, signins.heard_about_us, signins.is_contact, signins.dashboard_hidden, signins.timeline,
+             signins.preapproval, signins.notes, signins.motivation_score, signins.followup_message,
+             signins.next_steps_json, signins.created_at, agents.first_name, agents.middle_name, agents.last_name
         FROM signins
-         WHERE dashboard_hidden = 0
-        ORDER BY motivation_score DESC, created_at DESC
+        LEFT JOIN open_houses ON open_houses.id = signins.open_house_id
+        LEFT JOIN agents ON agents.id = COALESCE(
+            open_houses.agent_id,
+            signins.agent_id,
+            (
+                SELECT scheduled.agent_id
+                FROM open_houses AS scheduled
+                WHERE scheduled.status = 'Scheduled'
+                ORDER BY scheduled.event_date ASC, scheduled.start_time ASC
+                LIMIT 1
+            )
+        )
+         WHERE signins.dashboard_hidden = 0
+        ORDER BY signins.motivation_score DESC, signins.created_at DESC
     """)
     rows = c.fetchall()
 
@@ -826,6 +905,7 @@ def dashboard():
             "followup_message": row[15],
             "next_steps_json": json.loads(row[16]),
             "created_at": row[17],
+            "agent_name": " ".join(part for part in row[18:21] if part),
         })
 
 
@@ -837,13 +917,78 @@ def dashboard():
 @app.route("/contacts/add/<int:signin_id>", methods=["POST"])
 def add_contact(signin_id):
     conn = sqlite3.connect(DB_NAME)
-    conn.execute("UPDATE signins SET is_contact = 1 WHERE id = ?", (signin_id,))
+    c = conn.cursor()
+    c.execute("""
+        SELECT visitor_type, timeline, preapproval, currently, notes
+        FROM signins
+        WHERE id = ?
+    """, (signin_id,))
+    row = c.fetchone()
+    if not row:
+        conn.close()
+        return "Sign-in record not found.", 404
+
+    visitor_type, timeline, preapproval, currently, notes = row
+    motivation_score, followup_message, next_steps_json = categorize_and_score(
+        visitor_type, timeline, preapproval, notes, currently
+    )
+    # Resolve the same "hosted by" agent shown on the dashboard so it carries over to the contact record.
+    c.execute("""
+        SELECT COALESCE(
+            open_houses.agent_id,
+            signins.agent_id,
+            (
+                SELECT scheduled.agent_id
+                FROM open_houses AS scheduled
+                WHERE scheduled.status = 'Scheduled'
+                ORDER BY scheduled.event_date ASC, scheduled.start_time ASC
+                LIMIT 1
+            )
+        )
+        FROM signins
+        LEFT JOIN open_houses ON open_houses.id = signins.open_house_id
+        WHERE signins.id = ?
+    """, (signin_id,))
+    agent_row = c.fetchone()
+    agent_id = agent_row[0] if agent_row else None
+
+    c.execute("""
+        UPDATE signins
+        SET is_contact = 1, motivation_score = ?, followup_message = ?, next_steps_json = ?, agent_id = ?
+        WHERE id = ?
+    """, (motivation_score, followup_message, next_steps_json, agent_id, signin_id))
     conn.commit()
     conn.close()
     return redirect(url_for("dashboard"))
 
-@app.route("/contacts/new", methods=["POST"])
+@app.route("/contacts/new", methods=["GET", "POST"])
 def create_contact():
+    if request.method == "GET":
+        thank_you_message = """Hi,
+
+Thank you so much for visiting the open house today. It was a pleasure having you stop by, and I truly appreciate you taking the time to explore the property.
+
+If you have any questions about the home, would like additional details, or want to schedule a private showing, feel free to reach out anytime. I'm here to help with anything you need.
+
+Looking forward to connecting with you.
+
+Warm regards,"""
+        contact = {
+            "name": "",
+            "email": "",
+            "phone": "",
+            "visitor_type": "buyer",
+            "currently": "renting",
+            "timeline": "browsing",
+            "preapproval": "unknown",
+            "notes": thank_you_message,
+            "agent_id": None,
+        }
+        conn = sqlite3.connect(DB_NAME)
+        agents = conn.execute("SELECT id, first_name, middle_name, last_name FROM agents ORDER BY last_name, first_name").fetchall()
+        conn.close()
+        return render_template("edit_contact.html", contact=contact, is_new=True, agents=agents)
+
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip()
     phone = request.form.get("phone", "").strip()
@@ -855,6 +1000,7 @@ def create_contact():
     timeline = request.form.get("timeline", "browsing").strip()
     preapproval = request.form.get("preapproval", "unknown").strip()
     notes = request.form.get("notes", "").strip()
+    agent_id = request.form.get("agent_id", type=int)
 
     motivation_score, followup_message, next_steps_json = categorize_and_score(
         visitor_type, timeline, preapproval, notes, currently
@@ -865,12 +1011,12 @@ def create_contact():
         INSERT INTO signins (
             name, email, phone, visitor_type, currently, working_with_broker,
             zip_code, heard_about_us, is_contact, timeline, preapproval, notes,
-            motivation_score, followup_message, next_steps_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)
+            motivation_score, followup_message, next_steps_json, agent_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)
     """, (
         name, email, phone, visitor_type, currently, working_with_broker,
         zip_code, heard_about_us, timeline, preapproval, notes,
-        motivation_score, followup_message, next_steps_json
+        motivation_score, followup_message, next_steps_json, agent_id
     ))
     conn.commit()
     conn.close()
@@ -889,13 +1035,15 @@ def contacts():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
-         SELECT id, name, email, phone, visitor_type, currently,
-             working_with_broker, zip_code, heard_about_us, timeline,
-             preapproval, notes, motivation_score, followup_message,
-             next_steps_json, created_at
+         SELECT signins.id, signins.name, signins.email, signins.phone, signins.visitor_type, signins.currently,
+             signins.working_with_broker, signins.zip_code, signins.heard_about_us, signins.timeline,
+             signins.preapproval, signins.notes, signins.motivation_score, signins.followup_message,
+             signins.next_steps_json, signins.created_at,
+             agents.first_name, agents.middle_name, agents.last_name
         FROM signins
-        WHERE is_contact = 1
-        ORDER BY created_at DESC
+        LEFT JOIN agents ON agents.id = signins.agent_id
+        WHERE signins.is_contact = 1
+        ORDER BY signins.created_at DESC
     """)
     rows = c.fetchall()
     conn.close()
@@ -918,6 +1066,7 @@ def contacts():
             "followup_message": row[13],
             "next_steps": json.loads(row[14] or "[]"),
             "created_at": row[15],
+            "agent_name": " ".join(part for part in row[16:19] if part) or None,
         }
         for row in rows
     ]
@@ -932,12 +1081,14 @@ def tasks():
     selected_contact_id = request.args.get("contact_id", type=int)
 
     c.execute("""
-        SELECT id, name, email
+        SELECT id, name, email, agent_id
         FROM signins
         WHERE is_contact = 1
         ORDER BY name
     """)
-    contacts = [{"id": row[0], "name": row[1], "email": row[2]} for row in c.fetchall()]
+    contacts = [{"id": row[0], "name": row[1], "email": row[2], "agent_id": row[3]} for row in c.fetchall()]
+    c.execute("SELECT id, first_name, middle_name, last_name FROM agents ORDER BY last_name, first_name")
+    agents = c.fetchall()
 
     c.execute("""
          SELECT tasks.id, tasks.signin_id, tasks.title, tasks.due_date, tasks.priority,
@@ -981,13 +1132,41 @@ def tasks():
         for row in task_rows
     ]
     selected_contact = next((contact for contact in contacts if contact["id"] == selected_contact_id), None)
-    return render_template("tasks.html", contacts=contacts, tasks=task_list, selected_contact=selected_contact)
+    return render_template("tasks.html", contacts=contacts, agents=agents, tasks=task_list, selected_contact=selected_contact)
 
 @app.route("/tasks/create", methods=["POST"])
 def create_task():
     signin_id = request.form.get("signin_id", type=int)
+    agent_id = request.form.get("agent_id", type=int)
     task_id = request.form.get("task_id", type=int)
     action = request.form.get("action", "create")
+
+    if action == "send_email":
+        if not signin_id:
+            return "Client is required.", 400
+        selected_messages = []
+        message_fields = (
+            ("thank_you_selected", "thank_you_notes"),
+            ("follow_up_selected", "follow_up_notes"),
+            ("notes_email_selected", "notes_email_notes"),
+        )
+        for selected_field, notes_field in message_fields:
+            if request.form.get(selected_field) == "on":
+                message = request.form.get(notes_field, "").strip()
+                if not message:
+                    return "Add a message to every selected email option.", 400
+                selected_messages.append(message)
+        if not selected_messages:
+            return "Select at least one email option.", 400
+
+        conn = sqlite3.connect(DB_NAME)
+        client = conn.execute("SELECT name, email FROM signins WHERE id = ?", (signin_id,)).fetchone()
+        conn.close()
+        if not client or not client[1]:
+            return "This client does not have an email address.", 400
+        greeting = f"Hi {client[0] or 'there'},"
+        send_email(client[1], "Open House Follow-Up", f"{greeting}\n\n" + "\n\n".join(selected_messages))
+        return redirect(url_for("tasks"))
 
     if action == "delete":
         if not task_id:
@@ -1044,7 +1223,7 @@ def create_task():
 
     conn = sqlite3.connect(DB_NAME)
     values = (
-        signin_id, title, request.form.get("due_date", "").strip(),
+        signin_id, agent_id, title, request.form.get("due_date", "").strip(),
         request.form.get("priority", "Normal").strip(),
         request.form.get("status", "Open").strip(), request.form.get("notes", "").strip(),
         thank_you_selected, thank_you_date, thank_you_time, thank_you_send_now,
@@ -1057,7 +1236,7 @@ def create_task():
             return "Task is required for an update.", 400
         conn.execute("""
             UPDATE tasks
-            SET signin_id = ?, title = ?, due_date = ?, priority = ?, status = ?, notes = ?,
+            SET signin_id = ?, agent_id = ?, title = ?, due_date = ?, priority = ?, status = ?, notes = ?,
                 thank_you_selected = ?, thank_you_date = ?, thank_you_time = ?, thank_you_send_now = ?,
                 follow_up_selected = ?, follow_up_date = ?, follow_up_time = ?, follow_up_send_now = ?,
                 notes_email_selected = ?, notes_email_date = ?, notes_email_time = ?, notes_email_send_now = ?
@@ -1066,11 +1245,11 @@ def create_task():
     else:
         conn.execute("""
             INSERT INTO tasks (
-                signin_id, title, due_date, priority, status, notes,
+                signin_id, agent_id, title, due_date, priority, status, notes,
                 thank_you_selected, thank_you_date, thank_you_time, thank_you_send_now,
                 follow_up_selected, follow_up_date, follow_up_time, follow_up_send_now,
                 notes_email_selected, notes_email_date, notes_email_time, notes_email_send_now
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, values)
     conn.commit()
 
@@ -1112,6 +1291,7 @@ def edit_contact(signin_id):
         timeline = request.form.get("timeline", "").strip()
         preapproval = request.form.get("preapproval", "").strip()
         notes = request.form.get("notes", "").strip()
+        agent_id = request.form.get("agent_id", type=int)
 
         motivation_score, followup_message, next_steps_json = categorize_and_score(
             visitor_type, timeline, preapproval, notes, currently
@@ -1120,23 +1300,24 @@ def edit_contact(signin_id):
             UPDATE signins
             SET name = ?, email = ?, phone = ?, visitor_type = ?, currently = ?,
                 timeline = ?, preapproval = ?, notes = ?, motivation_score = ?,
-                followup_message = ?, next_steps_json = ?
+                followup_message = ?, next_steps_json = ?, agent_id = ?
             WHERE id = ?
         """, (
             name, email, phone, visitor_type, currently, timeline, preapproval,
-            notes, motivation_score, followup_message, next_steps_json, signin_id
+            notes, motivation_score, followup_message, next_steps_json, agent_id, signin_id
         ))
         conn.commit()
         conn.close()
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("contacts"))
 
     c.execute("""
-        SELECT id, name, email, phone, visitor_type, currently, timeline,
-               preapproval, notes
+        SELECT id, name, email, phone, visitor_type, currently,
+               timeline, preapproval, notes, agent_id
         FROM signins
         WHERE id = ?
     """, (signin_id,))
     row = c.fetchone()
+    agents = c.execute("SELECT id, first_name, middle_name, last_name FROM agents ORDER BY last_name, first_name").fetchall()
     conn.close()
 
     if not row:
@@ -1152,8 +1333,9 @@ def edit_contact(signin_id):
         "timeline": row[6],
         "preapproval": row[7],
         "notes": row[8],
+        "agent_id": row[9],
     }
-    return render_template("edit_contact.html", contact=contact)
+    return render_template("edit_contact.html", contact=contact, is_new=False, agents=agents)
 
 @app.route("/send_email/<int:signin_id>")
 def send_email_from_dashboard(signin_id):
@@ -1211,9 +1393,10 @@ if __name__ == "__main__":
     init_homes_table()
     init_agents_table()
     init_open_houses_table()
+    backfill_signin_open_houses()
     init_tasks_table()
 
 
 port = int(os.environ.get("PORT", 8080))
-app.run(host="0.0.0.0", port=port)
+app.run(host="0.0.0.0", port=port, debug=True)
 

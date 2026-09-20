@@ -21,7 +21,9 @@
         .address-search { position: relative; margin-bottom: 18px; }
         label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: .03em; }
         input { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; }
+        select { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; }
         input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
         .address-search input { width: 100%; }
         .suggestions { position: absolute; z-index: 2; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: white; box-shadow: 0 8px 20px rgba(23,32,51,.14); }
         .suggestion { display: block; width: 100%; padding: 11px 12px; border: 0; border-bottom: 1px solid #edf1f4; border-radius: 0; background: white; color: var(--ink); font: inherit; text-align: left; }
@@ -50,8 +52,8 @@
 <main class="page">
 
 <nav class="shortcut-bar" aria-label="Page navigation">
-    <a href="/signin"><strong>F1</strong> Sign In</a>
-    <a href="/dashboard"><strong>F2</strong> Dashboard</a>
+    <a href="{{ url_for('signin') }}"><strong>F1</strong> Sign In</a>
+    <a href="{{ url_for('dashboard') }}"><strong>F2</strong> Dashboard</a>
 </nav>
 
 <header class="page-heading">
@@ -73,6 +75,18 @@
     <input type="hidden" name="home_id" id="home-id">
     <label>Property ID</label><br>
     <input type="text" name="property_id"><br>
+
+    <label for="agent-id">Agent</label><br>
+    <select id="agent-id" name="agent_id">
+        <option value="">Select an agent</option>
+        {% for agent in agents %}
+        {% set agent_id_value = agent.id if agent.id is defined else agent[0] %}
+        {% set agent_first_name = agent.first_name if agent.first_name is defined else agent[1] %}
+        {% set agent_middle_name = agent.middle_name if agent.middle_name is defined else agent[2] %}
+        {% set agent_last_name = agent.last_name if agent.last_name is defined else agent[3] %}
+        <option value="{{ agent_id_value }}">{{ agent_first_name }}{% if agent_middle_name %} {{ agent_middle_name }}{% endif %} {{ agent_last_name }}</option>
+        {% endfor %}
+    </select><br>
 
     <label for="address">Address</label><br>
     <input id="address" type="text" name="address"><br>
@@ -169,9 +183,11 @@
 <div class="table-wrap">
 
 <table>
+<thead>
     <tr>
         <th>ID</th>
         <th>Property ID</th>
+        <th>Agent</th>
         <th>Address</th>
         <th>City</th>
         <th>State</th>
@@ -180,20 +196,23 @@
         <th>Lot Size</th>
         <th>Current</th>
     </tr>
+</thead>
+<tbody>
 
     {% for h in homes %}
-    <tr class="home-row" data-home-id="{{ h[0] }}" data-property-id="{{ h[1] }}" data-address="{{ h[2] }}" data-city="{{ h[3] }}" data-state="{{ h[4] }}" data-zip-code="{{ h[5] }}" data-rooms="{{ h[6] }}" data-lot-size="{{ h[7] }}" data-current="{{ h[8] }}">
+    <tr class="home-row" data-home-id="{{ h[0] }}" data-property-id="{{ h[1] }}" data-agent-id="{{ h[2] or '' }}" data-address="{{ h[3] }}" data-city="{{ h[4] }}" data-state="{{ h[5] }}" data-zip-code="{{ h[6] }}" data-rooms="{{ h[7] }}" data-lot-size="{{ h[8] }}" data-current="{{ h[9] }}">
         <td>{{ h[0] }}</td>
         <td>{{ h[1] }}</td>
-        <td>{{ h[2] }}</td>
+        <td>{% for agent in agents %}{% if (agent.id if agent.id is defined else agent[0]) == h[2] %}{{ agent.first_name if agent.first_name is defined else agent[1] }}{% set middle_name = agent.middle_name if agent.middle_name is defined else agent[2] %}{% if middle_name %} {{ middle_name }}{% endif %} {{ agent.last_name if agent.last_name is defined else agent[3] }}{% endif %}{% endfor %}</td>
         <td>{{ h[3] }}</td>
         <td>{{ h[4] }}</td>
         <td>{{ h[5] }}</td>
         <td>{{ h[6] }}</td>
         <td>{{ h[7] }}</td>
-        <td>{% if h[8] == 1 %}✔{% endif %}</td>
+        <td>{% if h[9] == 1 %}✔{% endif %}</td>
     </tr>
     {% endfor %}
+</tbody>
 </table>
 </div>
 </section>
@@ -211,6 +230,7 @@
             homeId.value = row.dataset.homeId;
             addHomeButton.disabled = true;
             homeForm.elements.property_id.value = row.dataset.propertyId;
+            homeForm.elements.agent_id.value = row.dataset.agentId;
             homeForm.elements.address.value = row.dataset.address;
             homeForm.elements.city.value = row.dataset.city;
             homeForm.elements.state.value = row.dataset.state;

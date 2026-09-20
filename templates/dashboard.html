@@ -632,16 +632,14 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
         </div>
 
         <nav class="sidebar-nav" aria-label="Main navigation">
-            <a class="active nav-dashboard" href="/dashboard">Dashboard</a>
-            <a class="nav-contacts" href="/contacts">Contacts</a>
-            <a class="nav-analytics" href="/tasks">Tasks</a>
-            <a class="nav-properties" href="/properties">Properties</a>
-            <a class="nav-agents" href="/agents">Agents</a>
-            <a class="nav-open-house" href="/generate-open-house">Generate Open House</a>
-            <a class="nav-signins" href="/signin">Sign-Ins</a>
-            <a class="nav-analytics" href="/analytics">Analytics</a>
-            <a class="nav-settings" href="/settings">Settings</a>
-            <a href="/export_csv">Export CSV</a>
+            <a class="active nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
+            <a class="nav-analytics" href="{{ url_for('tasks') }}">Tasks</a>
+            <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
+            <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
+            <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
+            <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
+            <a href="{{ url_for('export_csv') }}">Export CSV</a>
         </nav>
 
         <div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div>
@@ -653,7 +651,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
 <section class="dashboard-tasks" aria-labelledby="dashboard-tasks-heading">
     <div class="dashboard-tasks-header">
         <h2 id="dashboard-tasks-heading">Saved Tasks</h2>
-        <a href="/tasks">View all tasks</a>
+        <a href="{{ url_for('tasks') }}">View all tasks</a>
     </div>
     {% if dashboard_tasks %}
     <div class="dashboard-task-list">
@@ -734,6 +732,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
         <div class="contact-details">
             <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value" title="{{ s.email }}">{{ s.email }}</span></div>
             <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ s.phone or "Not provided" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Hosted by</span><span class="detail-value">{{ s.agent_name or "Not assigned" }}</span></div>
             <div class="detail-item"><span class="detail-label">Zip Code</span><span class="detail-value">{{ s.zip_code or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Timeline</span><span class="detail-value">{{ s.timeline }}</span></div>
             <div class="detail-item"><span class="detail-label">WWB</span><span class="detail-value">{{ "Yes" if s.working_with_broker == "yes" else "No" }}</span></div>

@@ -61,10 +61,10 @@
 <body>
 <main class="page">
     <nav class="shortcut-bar" aria-label="Page navigation">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/properties">Properties</a>
-        <a href="/agents">Agents</a>
-        <a class="active" href="/generate-open-house">Generate Open House</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('properties') }}">Properties</a>
+        <a href="{{ url_for('agents') }}">Agents</a>
+        <a class="active" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
     </nav>
 
     <header class="page-heading">
@@ -136,8 +136,8 @@
                         data-title="{{ event.title|e }}" data-status="{{ event.status|e }}" data-visitor-capacity="{{ event.visitor_capacity|e }}"
                         data-rsvp-contact="{{ event.rsvp_contact|e }}" data-public-notes="{{ event.public_notes|e }}" data-internal-notes="{{ event.internal_notes|e }}">
                         <td><span class="event-title">{{ event.title or "Open House" }}</span><span class="event-detail">{{ event.event_date }}</span></td>
-                        <td><span class="event-title">{{ event.address }}</span><span class="event-detail">{{ event.city }}, {{ event.state }} {{ event.zip_code }}</span></td>
-                        <td><span class="event-title">{{ event.agent_first_name }}{% if event.agent_middle_name %} {{ event.agent_middle_name }}{% endif %} {{ event.agent_last_name }}</span><span class="event-detail">{{ event.brokerage or "Independent" }}</span></td>
+                        <td><span class="event-title">{{ event.address or "Property unavailable" }}</span><span class="event-detail">{% if event.city %}{{ event.city }}, {{ event.state }} {{ event.zip_code }}{% else %}No property details{% endif %}</span></td>
+                        <td><span class="event-title">{% if event.agent_first_name %}{{ event.agent_first_name }}{% if event.agent_middle_name %} {{ event.agent_middle_name }}{% endif %} {{ event.agent_last_name }}{% else %}Agent unavailable{% endif %}</span><span class="event-detail">{{ event.brokerage or "Independent" }}</span></td>
                         <td>{{ event.start_time }} - {{ event.end_time }}</td>
                         <td><span class="status{% if event.status|lower == 'cancelled' %} cancelled{% elif event.status|lower == 'completed' %} completed{% endif %}">{{ event.status }}</span></td>
                     </tr>

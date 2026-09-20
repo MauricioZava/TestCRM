@@ -50,9 +50,9 @@
 <body>
 <main class="page">
     <nav class="shortcut-bar" aria-label="Page navigation">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/properties">Properties</a>
-        <a href="/agents">Agents</a>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('properties') }}">Properties</a>
+        <a href="{{ url_for('agents') }}">Agents</a>
     </nav>
 
     <header class="page-heading">

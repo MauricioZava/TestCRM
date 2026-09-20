@@ -115,6 +115,10 @@
                         <p class="contact-note">{{ contact.notes or "No notes yet" }}</p>
                         <div class="contact-actions">
                             <a class="button small-button" href="{{ url_for('tasks', contact_id=contact.id) }}">Create task</a>
+                            <a class="button small-button edit" href="{{ url_for('edit_contact', signin_id=contact.id) }}">Edit Contact</a>
+                            <form method="post" action="{{ url_for('delete_contact', signin_id=contact.id) }}" onsubmit="return confirm('Delete this contact?');">
+                                <button class="small-button delete" type="submit">Delete</button>
+                            </form>
                         </div>
                     </div>
                     <span class="score">{{ contact.motivation_score }}%</span>

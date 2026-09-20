@@ -842,6 +842,40 @@ def add_contact(signin_id):
     conn.close()
     return redirect(url_for("dashboard"))
 
+@app.route("/contacts/new", methods=["POST"])
+def create_contact():
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip()
+    phone = request.form.get("phone", "").strip()
+    visitor_type = request.form.get("visitor_type", "buyer").strip()
+    currently = request.form.get("currently", "renting").strip()
+    working_with_broker = "yes" if request.form.get("working_with_broker") == "yes" else "no"
+    zip_code = request.form.get("zip_code", "").strip()
+    heard_about_us = request.form.get("heard_about_us", "").strip()
+    timeline = request.form.get("timeline", "browsing").strip()
+    preapproval = request.form.get("preapproval", "unknown").strip()
+    notes = request.form.get("notes", "").strip()
+
+    motivation_score, followup_message, next_steps_json = categorize_and_score(
+        visitor_type, timeline, preapproval, notes, currently
+    )
+
+    conn = sqlite3.connect(DB_NAME)
+    conn.execute("""
+        INSERT INTO signins (
+            name, email, phone, visitor_type, currently, working_with_broker,
+            zip_code, heard_about_us, is_contact, timeline, preapproval, notes,
+            motivation_score, followup_message, next_steps_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)
+    """, (
+        name, email, phone, visitor_type, currently, working_with_broker,
+        zip_code, heard_about_us, timeline, preapproval, notes,
+        motivation_score, followup_message, next_steps_json
+    ))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("contacts"))
+
 @app.route("/contacts/delete/<int:signin_id>", methods=["POST"])
 def delete_contact(signin_id):
     conn = sqlite3.connect(DB_NAME)
@@ -887,7 +921,9 @@ def contacts():
         }
         for row in rows
     ]
-    return render_template("Contacts.html", contacts=contacts)
+    edit_id = request.args.get("edit", type=int)
+    edit_contact_data = next((contact for contact in contacts if contact["id"] == edit_id), None)
+    return render_template("Contacts.html", contacts=contacts, edit_contact=edit_contact_data)
 
 @app.route("/tasks")
 def tasks():

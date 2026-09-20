@@ -3,166 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contacts</title>
+    <title>Contacts | Lead Workspace</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --ink: #0c1726; --muted: #405268; --line: #b8c6d0; --paper: #f8fbfc; --canvas: #cbd5df; --teal: #075f5b; }
+        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; --green: #287d68; --gold: #ffb547; --red: #c82333; }
         * { box-sizing: border-box; }
-        body { margin: 0; padding: 24px 0; background: var(--canvas); color: var(--ink); font-family: "DM Sans", Arial, sans-serif; }
-        .page { width: 100%; margin: 0; }
-        .page-header { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin: 0 22px 22px; }
-        h1 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; font-size: 38px; letter-spacing: -.03em; font-weight: 700; }
-        .back-link, .edit-link, .delete-link, .send-email { display: inline-block; padding: 9px 13px; border-radius: 7px; color: white; text-decoration: none; font-size: 13px; font-weight: 700; white-space: nowrap; }
-        .back-link { background: var(--ink); }
-        .edit-link { background: #f28f8f; color: var(--ink); }
-        .delete-link { border: 0; background: #c82333; font: inherit; cursor: pointer; }
-        .delete-link:hover { background: #a51d2b; }
-        .send-email { background: #2563c7; }
-        .table-shell { overflow-x: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--paper); box-shadow: 0 10px 28px rgba(23,32,51,.08); }
-        table { width: 100%; min-width: 1500px; border-collapse: collapse; font-size: 14px; }
-        th { padding: 15px 16px; border: 1px solid #6d8792; border-bottom-width: 3px; background: #b7cbc9; color: #091b24; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-align: center; text-transform: uppercase; white-space: nowrap; }
-        td { padding: 16px; border: 1px solid #b8c6d0; color: #102131; font-weight: 600; text-align: center; vertical-align: top; }
-        .wwb-column { text-align: center; }
-        tbody tr:last-child td { border-bottom: 0; }
-        tbody tr:hover { background: #fbfdfd; }
-        tbody tr.motivation-high { background: #f1fbf3; }
-        tbody tr.motivation-medium { background: #f2f7ff; }
-        tbody tr.motivation-low { background: #fff9ed; }
-        tbody tr.motivation-critical { background: #fff2f3; }
-        tbody tr.motivation-high:hover { background: #e5f6e9; }
-        tbody tr.motivation-medium:hover { background: #e6f0ff; }
-        tbody tr.motivation-low:hover { background: #fff2d8; }
-        tbody tr.motivation-critical:hover { background: #ffe4e7; }
-        .contact-name { color: #071923; font-size: 15px; font-weight: 900; white-space: nowrap; }
-        .muted { color: var(--muted); }
-        .actions { display: flex; justify-content: center; gap: 7px; align-items: flex-start; }
-        .email-modal { display: none; position: fixed; inset: 0; z-index: 10; align-items: center; justify-content: center; padding: 18px; background: rgba(23,32,51,.48); }
-        .email-modal.open { display: flex; }
-        .email-dialog { width: min(100%, 520px); padding: 24px; border-radius: 14px; background: var(--paper); box-shadow: 0 20px 50px rgba(23,32,51,.2); }
-        .email-dialog h2 { margin: 0 0 18px; font-size: 21px; }
-        .email-dialog label { display: block; margin: 12px 0 6px; color: var(--ink); font-size: 13px; font-weight: 800; }
-        .email-dialog input, .email-dialog textarea { width: 100%; box-sizing: border-box; padding: 10px 11px; border: 1px solid var(--line); border-radius: 7px; font: inherit; }
-        .email-dialog textarea { min-height: 150px; resize: vertical; }
-        .email-dialog input:focus, .email-dialog textarea:focus { border-color: var(--teal); outline: 2px solid rgba(22,125,120,.15); }
-        .email-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-        .email-dialog-actions button { padding: 9px 14px; border: 0; border-radius: 7px; font: inherit; font-weight: 700; cursor: pointer; }
-        .email-cancel { background: #e7edf1; color: var(--ink); }
-        .email-send { background: #2563c7; color: white; }
-        tbody tr { cursor: pointer; }
-        tbody tr .actions { opacity: 0; pointer-events: none; transition: opacity .18s ease; }
-        tbody tr.selected .actions { opacity: 1; pointer-events: auto; }
-        .empty-state { padding: 48px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; background: rgba(255,255,255,.65); color: var(--muted); text-align: center; }
-        @media (max-width: 720px) { body { padding: 24px 12px; } .page-header { align-items: flex-start; flex-direction: column; } h1 { font-size: 30px; } }
+        body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        .page { max-width: 1480px; margin: 0 auto; }
+        .topbar { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) auto; align-items: end; gap: 24px; margin-bottom: 30px; }
+        .search-control label { display: block; margin: 0 0 6px; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .search-input-wrap { position: relative; }
+        .search-input-wrap::before { position: absolute; top: 50%; left: 12px; color: var(--muted); content: "⌕"; font-size: 20px; line-height: 1; transform: translateY(-55%); }
+        .search-control input { width: 100%; min-height: 42px; padding: 9px 34px 9px 34px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.88); color: var(--ink); font: inherit; }
+        .search-control input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .search-count { display: block; min-height: 15px; margin-top: 5px; color: var(--muted); font-size: 11px; }
+        .search-clear { position: absolute; top: 50%; right: 8px; width: 24px; min-height: 24px; padding: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 17px; transform: translateY(-50%); }
+        .search-clear:hover { background: #e7edf1; filter: none; }
+        .title-block { min-width: 0; }
+        .eyebrow { margin: 0 0 7px; color: #d9922e; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+        h1, h2 { font-family: "Space Grotesk", Arial, sans-serif; letter-spacing: -.03em; }
+        h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); }
+        h2 { margin: 0; font-size: 21px; }
+        .subtitle { margin: 8px 0 0; color: var(--muted); }
+        .top-actions, .form-actions, .contact-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+        .button, button { min-height: 40px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; }
+        .button:hover, button:hover { filter: brightness(.92); }
+        .button.secondary { background: var(--ink); }
+        .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
+        .workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr); gap: 22px; align-items: start; }
+        .panel { min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
+        .panel-header { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+        .panel-intro { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+        .count { color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
+        .contact-list { display: grid; gap: 10px; }
+        .contact-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 11px; background: var(--paper); cursor: pointer; }
+        .contact-row:hover, .contact-row.selected, .contact-row.search-match { border-color: #9ebce7; background: #f4f8ff; }
+        .contact-row.search-current { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,199,.14); }
+        .contact-main { min-width: 0; }
+        .contact-name { display: block; overflow: hidden; color: var(--ink); font-size: 16px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+        .contact-name mark, .contact-email mark { padding: 1px 2px; border-radius: 3px; background: #ffcf7a; color: var(--ink); }
+        .contact-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 5px; color: var(--muted); font-size: 12px; }
+        .contact-note { margin: 9px 0 0; overflow: hidden; color: #405268; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+        .badge { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; text-transform: capitalize; }
+        .score { min-width: 48px; padding: 7px 8px; border-radius: 8px; background: #eef8f3; color: var(--green); font-size: 13px; font-weight: 900; text-align: center; }
+        .contact-actions { justify-content: flex-end; margin-top: 10px; }
+        .small-button { min-height: 32px; padding: 6px 9px; font-size: 12px; }
+        .small-button.edit { background: #f6c177; color: var(--ink); }
+        .small-button.delete { background: #fff0f1; color: var(--red); }
+        .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+        .wide { grid-column: 1 / -1; }
+        label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: .03em; }
+        input, select, textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; }
+        textarea { min-height: 82px; resize: vertical; }
+        input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .form-actions { margin-top: 22px; }
+        .form-actions button { flex: 1; }
+        .form-actions .cancel { background: #e7edf1; color: var(--ink); }
+        @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } .workspace { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .form-grid { grid-template-columns: 1fr; } .wide { grid-column: auto; } .contact-row { grid-template-columns: 1fr; } .contact-actions { justify-content: flex-start; } }
     </style>
 </head>
 <body>
-    <main class="page">
-        <header class="page-header">
+<main class="page">
+    <header class="topbar">
+        <div class="search-control">
+            <label for="contact-search">Find a contact</label>
+            <div class="search-input-wrap">
+                <input id="contact-search" type="search" placeholder="Search names or emails..." autocomplete="off" aria-describedby="search-count">
+                <button class="search-clear" id="search-clear" type="button" aria-label="Clear contact search" hidden>&times;</button>
+            </div>
+            <span class="search-count" id="search-count" aria-live="polite"></span>
+        </div>
+        <div class="title-block">
+            <p class="eyebrow">Lead workspace</p>
             <h1>Contacts</h1>
-            <a class="back-link" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
-        </header>
-
-        {% if contacts %}
-        <div class="table-shell">
-            <table aria-label="Contacts spreadsheet">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Type</th>
-                        <th>Currently</th>
-                        <th class="wwb-column">WWB</th>
-                        <th>Zip Code</th>
-                        <th>Heard/Us</th>
-                        <th>Timeline</th>
-                        <th>Preapproval</th>
-                        <th>Notes</th>
-                        <th>Motivation</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for contact in contacts %}
-                    <tr class="{% if contact.motivation_score >= 80 %}motivation-high{% elif contact.motivation_score >= 60 %}motivation-medium{% elif contact.motivation_score >= 40 %}motivation-low{% else %}motivation-critical{% endif %}" onclick="selectContactRow(this)">
-                        <td class="contact-name">{{ contact.name }}</td>
-                        <td>{{ contact.email }}</td>
-                        <td class="muted">{{ contact.phone or "Not provided" }}</td>
-                        <td>{{ contact.visitor_type }}</td>
-                        <td>{{ contact.currently }}</td>
-                        <td class="wwb-column">{{ "Yes" if contact.working_with_broker == "yes" else "No" }}</td>
-                        <td>{{ contact.zip_code or "Not provided" }}</td>
-                        <td>{{ contact.heard_about_us or "Not provided" }}</td>
-                        <td>{{ contact.timeline }}</td>
-                        <td>{{ contact.preapproval }}</td>
-                        <td class="notes">{{ contact.notes or "No notes" }}</td>
-                        <td>{{ contact.motivation_score }}</td>
-                        <td class="muted">{{ contact.created_at }}</td>
-                        <td>
-                            <div class="actions">
-                                <a class="send-email" href="{{ url_for('tasks', contact_id=contact.id) }}" onclick="event.stopPropagation()">Create Task</a>
-                                <a class="edit-link" href="{{ url_for('edit_contact', signin_id=contact.id) }}" onclick="event.stopPropagation()">Edit</a>
-                                <form method="post" action="{{ url_for('delete_contact', signin_id=contact.id) }}" onsubmit="return confirm('Delete this contact?');" onclick="event.stopPropagation()">
-                                    <button class="delete-link" type="submit">Delete</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <p class="subtitle">Keep every visitor relationship organized, current, and ready for the next conversation.</p>
         </div>
-        {% else %}
-        <div class="empty-state">No contacts have been added yet.</div>
-        {% endif %}
-    </main>
-    <div class="email-modal" id="emailModal" role="dialog" aria-modal="true" aria-labelledby="emailDialogTitle">
-        <div class="email-dialog">
-            <h2 id="emailDialogTitle">Send Custom Email</h2>
-            <form id="customEmailForm" method="post">
-                <label for="emailSubject">Subject</label>
-                <input id="emailSubject" name="subject" type="text" value="Open House Follow-Up" required>
-                <label for="emailBody">Message</label>
-                <textarea id="emailBody" name="body" required></textarea>
-                <div class="email-dialog-actions">
-                    <button class="email-cancel" type="button" onclick="closeEmailModal()">Cancel</button>
-                    <button class="email-send" type="submit">Send</button>
+        <nav class="top-actions" aria-label="Contacts navigation">
+            <a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="button ghost" href="{{ url_for('tasks') }}">Tasks</a>
+        </nav>
+    </header>
+
+    <div class="workspace">
+        <section class="panel" aria-labelledby="contact-list-title">
+            <div class="panel-header">
+                <div><h2 id="contact-list-title">Your contacts</h2><p class="panel-intro">Visitors saved from your open house sign-ins.</p></div>
+                <span class="count">{{ contacts|length }} contact{% if contacts|length != 1 %}s{% endif %}</span>
+            </div>
+            {% if contacts %}
+            <div class="contact-list">
+                {% for contact in contacts %}
+                <article class="contact-row{% if edit_contact and edit_contact.id == contact.id %} selected{% endif %}"
+                    data-search="{{ [contact.name, contact.email]|join(' ')|lower|e }}"
+                    data-contact-id="{{ contact.id }}"
+                    data-name="{{ (contact.name or '')|e }}"
+                    data-email="{{ (contact.email or '')|e }}"
+                    data-phone="{{ (contact.phone or '')|e }}"
+                    data-visitor-type="{{ (contact.visitor_type or '')|e }}"
+                    data-currently="{{ (contact.currently or '')|e }}"
+                    data-timeline="{{ (contact.timeline or '')|e }}"
+                    data-preapproval="{{ (contact.preapproval or '')|e }}"
+                    data-zip-code="{{ (contact.zip_code or '')|e }}"
+                    data-heard-about-us="{{ (contact.heard_about_us or '')|e }}"
+                    data-working-with-broker="{{ (contact.working_with_broker or 'no')|e }}"
+                    data-notes="{{ (contact.notes or '')|e }}">
+                    <div class="contact-main">
+                        <span class="contact-name">{{ contact.name }}</span>
+                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span><span class="badge">{{ contact.visitor_type }}</span></div>
+                        <p class="contact-note">{{ contact.notes or "No notes yet" }}</p>
+                        <div class="contact-actions">
+                            <a class="button small-button" href="{{ url_for('tasks', contact_id=contact.id) }}">Create task</a>
+                        </div>
+                    </div>
+                    <span class="score">{{ contact.motivation_score }}%</span>
+                </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">No contacts yet. Add your first contact from the form.</div>
+            {% endif %}
+        </section>
+
+        <section class="panel" aria-labelledby="contact-form-title">
+            <div class="panel-header">
+                <div><h2 id="contact-form-title">{% if edit_contact %}Edit contact{% else %}Add a contact{% endif %}</h2><p class="panel-intro" id="contact-form-intro">{% if edit_contact %}Update details and recalculate the lead score.{% else %}Create a contact directly, even when they did not come through an open house.{% endif %}</p></div>
+                <button class="button ghost small-button" id="new-contact-button" type="button">New contact</button>
+            </div>
+            <form id="contact-form" method="post" action="{% if edit_contact %}{{ url_for('edit_contact', signin_id=edit_contact.id) }}{% else %}{{ url_for('create_contact') }}{% endif %}">
+                <div class="form-grid">
+                    <div class="wide"><label for="name">Full name *</label><input id="name" name="name" value="{{ edit_contact.name if edit_contact else '' }}" required></div>
+                    <div><label for="email">Email *</label><input id="email" name="email" type="email" value="{{ edit_contact.email if edit_contact else '' }}" required></div>
+                    <div><label for="phone">Phone</label><input id="phone" name="phone" value="{{ edit_contact.phone if edit_contact else '' }}"></div>
+                    <div><label for="visitor_type">Contact type</label><select id="visitor_type" name="visitor_type">{% for value, label in [("buyer", "Buyer"), ("seller", "Seller"), ("neighbor", "Neighbor"), ("just-looking", "Just looking")] %}<option value="{{ value }}" {% if edit_contact and edit_contact.visitor_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+                    <div><label for="currently">Currently</label><select id="currently" name="currently"><option value="renting" {% if edit_contact and edit_contact.currently == "renting" %}selected{% endif %}>Renting</option><option value="own" {% if edit_contact and edit_contact.currently == "own" %}selected{% endif %}>Own</option></select></div>
+                    <div><label for="timeline">Timeline</label><select id="timeline" name="timeline"><option value="0-3" {% if edit_contact and edit_contact.timeline == "0-3" %}selected{% endif %}>0-3 months</option><option value="3-6" {% if edit_contact and edit_contact.timeline == "3-6" %}selected{% endif %}>3-6 months</option><option value="6-12" {% if edit_contact and edit_contact.timeline == "6-12" %}selected{% endif %}>6-12 months</option><option value="browsing" {% if not edit_contact or edit_contact.timeline == "browsing" %}selected{% endif %}>Just browsing</option></select></div>
+                    <div><label for="preapproval">Pre-approval</label><select id="preapproval" name="preapproval"><option value="yes" {% if edit_contact and edit_contact.preapproval == "yes" %}selected{% endif %}>Yes</option><option value="no" {% if edit_contact and edit_contact.preapproval == "no" %}selected{% endif %}>No</option><option value="unknown" {% if not edit_contact or edit_contact.preapproval == "unknown" %}selected{% endif %}>Not sure</option></select></div>
+                    <div><label for="zip_code">ZIP code</label><input id="zip_code" name="zip_code" value="{{ edit_contact.zip_code if edit_contact else '' }}"></div>
+                    <div><label for="heard_about_us">Source</label><input id="heard_about_us" name="heard_about_us" value="{{ edit_contact.heard_about_us if edit_contact else '' }}" placeholder="Referral, website, event..."></div>
+                    <div><label for="working_with_broker">Working with broker</label><select id="working_with_broker" name="working_with_broker"><option value="no" {% if not edit_contact or edit_contact.working_with_broker != "yes" %}selected{% endif %}>No</option><option value="yes" {% if edit_contact and edit_contact.working_with_broker == "yes" %}selected{% endif %}>Yes</option></select></div>
+                    <div class="wide"><label for="notes">Notes</label><textarea id="notes" name="notes" placeholder="Conversation notes, preferences, or next steps...">{{ edit_contact.notes if edit_contact else '' }}</textarea></div>
                 </div>
+                <div class="form-actions"><button type="submit">{% if edit_contact %}Save changes{% else %}Add contact{% endif %}</button>{% if edit_contact %}<a class="button cancel" href="{{ url_for('contacts') }}">Cancel</a>{% endif %}</div>
             </form>
-        </div>
+        </section>
     </div>
-    <script>
-        function selectContactRow(row) {
-            document.querySelectorAll("tbody tr.selected").forEach((selectedRow) => {
-                if (selectedRow !== row) {
-                    selectedRow.classList.remove("selected");
-                }
-            });
-            row.classList.toggle("selected");
-        }
+</main>
+<script>
+    const searchInput = document.getElementById("contact-search");
+    const searchClear = document.getElementById("search-clear");
+    const searchCount = document.getElementById("search-count");
+    const contactRows = [...document.querySelectorAll(".contact-row")];
+    const contactForm = document.getElementById("contact-form");
+    const newContactButton = document.getElementById("new-contact-button");
+    const formTitle = document.getElementById("contact-form-title");
+    const formIntro = document.getElementById("contact-form-intro");
+    let matchingRows = [];
+    let activeMatch = -1;
 
-        function openEmailModal(contactId, contactName, followupMessage) {
-            document.getElementById("customEmailForm").action = `/send_custom_email/${contactId}`;
-            document.getElementById("emailDialogTitle").textContent = `Send Custom Email to ${contactName}`;
-            document.getElementById("emailBody").value = followupMessage;
-            document.getElementById("emailModal").classList.add("open");
-            document.getElementById("emailBody").focus();
-        }
+    function setFormValue(fieldName, value) {
+        contactForm.elements[fieldName].value = value || "";
+    }
 
-        function openEmailModalFromButton(button) {
-            openEmailModal(button.dataset.contactId, button.dataset.contactName, button.dataset.followupMessage);
-        }
-
-        function closeEmailModal() {
-            document.getElementById("emailModal").classList.remove("open");
-        }
-
-        document.getElementById("emailModal").addEventListener("click", (event) => {
-            if (event.target.id === "emailModal") {
-                closeEmailModal();
-            }
+    function selectContact(row) {
+        ["name", "email", "phone", "visitor_type", "currently", "timeline", "preapproval", "zip_code", "heard_about_us", "working_with_broker", "notes"].forEach((fieldName) => {
+            const dataName = fieldName.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+            setFormValue(fieldName, row.dataset[dataName]);
         });
-    </script>
+        contactForm.action = `/contacts/${row.dataset.contactId}`;
+        formTitle.textContent = "Edit contact";
+        formIntro.textContent = "Update details and recalculate the lead score.";
+        document.querySelectorAll(".contact-row.selected").forEach((selectedRow) => selectedRow.classList.remove("selected"));
+        row.classList.add("selected");
+    }
+
+    function startNewContact() {
+        contactForm.reset();
+        contactForm.action = "{{ url_for('create_contact') }}";
+        formTitle.textContent = "Add a contact";
+        formIntro.textContent = "Create a contact directly, even when they did not come through an open house.";
+        document.querySelectorAll(".contact-row.selected").forEach((selectedRow) => selectedRow.classList.remove("selected"));
+    }
+
+    contactRows.forEach((row) => {
+        row.addEventListener("click", (event) => {
+            if (event.target.closest("a")) return;
+            selectContact(row);
+        });
+    });
+
+    newContactButton.addEventListener("click", startNewContact);
+
+    function escapeHtml(value) {
+        return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;" })[character]);
+    }
+
+    function highlightMatchingFields(row, query) {
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        row.querySelectorAll(".contact-name, .contact-email").forEach((field) => {
+            const originalValue = field.dataset.originalValue || field.textContent;
+            field.dataset.originalValue = originalValue;
+            const fieldMatches = query && new RegExp(escapedQuery, "i").test(originalValue);
+            field.innerHTML = fieldMatches
+                ? escapeHtml(originalValue).replace(new RegExp(`(${escapedQuery})`, "ig"), "<mark>$1</mark>")
+                : escapeHtml(originalValue);
+        });
+    }
+
+    function updateSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        matchingRows = contactRows.filter((row) => row.dataset.search.includes(query));
+        activeMatch = matchingRows.length ? Math.min(activeMatch < 0 ? 0 : activeMatch, matchingRows.length - 1) : -1;
+        contactRows.forEach((row) => {
+            const isMatch = matchingRows.includes(row);
+            row.hidden = Boolean(query) && !isMatch;
+            row.style.display = Boolean(query) && !isMatch ? "none" : "";
+            row.classList.toggle("search-match", Boolean(query) && isMatch);
+            row.classList.remove("search-current");
+            highlightMatchingFields(row, isMatch ? query : "");
+        });
+        if (activeMatch >= 0) matchingRows[activeMatch].classList.add("search-current");
+        searchClear.hidden = !query;
+        searchCount.textContent = query ? `${matchingRows.length} match${matchingRows.length === 1 ? "" : "es"}${matchingRows.length > 1 ? " · Tab for next" : ""}` : "";
+    }
+
+    searchInput.addEventListener("input", () => {
+        activeMatch = 0;
+        updateSearch();
+    });
+
+    searchInput.addEventListener("keydown", (event) => {
+        if (event.key !== "Tab" || matchingRows.length < 2) return;
+        event.preventDefault();
+        activeMatch = (activeMatch + 1) % matchingRows.length;
+        matchingRows.forEach((row) => row.classList.remove("search-current"));
+        const nextRow = matchingRows[activeMatch];
+        nextRow.classList.add("search-current");
+        nextRow.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    searchClear.addEventListener("click", () => {
+        searchInput.value = "";
+        searchInput.focus();
+        updateSearch();
+    });
+</script>
 </body>
 </html>

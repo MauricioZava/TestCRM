@@ -285,6 +285,28 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div>
+                    <label>Property Type</label>
+                    <select name="property_type">
+                        <option value="" selected disabled>Select property type</option>
+                        <option value="single-family">Single Family</option>
+                        <option value="condo">Condo</option>
+                        <option value="townhome">Townhome</option>
+                        <option value="multi-family">Multi-Family</option>
+                        <option value="land">Land</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Bedrooms</label>
+                    <input type="text" name="bedrooms" placeholder="e.g. 3 or 3+" maxlength="10">
+                </div>
+            </div>
+
+            <label>Preferred Areas</label>
+            <input type="text" name="preferred_areas" placeholder="Neighborhoods or cities">
+
             <div class="checkbox-field">
                 <input type="checkbox" id="workingWithBroker" name="working_with_broker" value="yes">
                 <label for="workingWithBroker">Are you currently working with a broker?</label>

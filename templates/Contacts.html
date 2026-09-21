@@ -154,7 +154,7 @@
             <div class="contact-list">
                 {% for contact in contacts %}
                 <article class="contact-row"
-                    data-search="{{ [contact.name, contact.email]|join(' ')|lower|e }}"
+                    data-search="{{ [contact.name, contact.email, contact.property_type, contact.bedrooms, contact.preferred_areas]|join(' ')|lower|e }}"
                     data-contact-id="{{ contact.id }}"
                     data-name="{{ (contact.name or '')|e }}"
                     data-first-name="{{ (contact.first_name or '')|e }}"
@@ -164,6 +164,9 @@
                     data-alternate-phone="{{ (contact.alternate_phone or '')|e }}"
                     data-visitor-type="{{ (contact.visitor_type or '')|e }}"
                     data-currently="{{ (contact.currently or '')|e }}"
+                    data-property-type="{{ (contact.property_type or '')|e }}"
+                    data-bedrooms="{{ (contact.bedrooms or '')|e }}"
+                    data-preferred-areas="{{ (contact.preferred_areas or '')|e }}"
                     data-timeline="{{ (contact.timeline or '')|e }}"
                     data-preapproval="{{ (contact.preapproval or '')|e }}"
                     data-zip-code="{{ (contact.zip_code or '')|e }}"
@@ -173,7 +176,7 @@
                     data-notes="{{ (contact.notes or '')|e }}">
                     <div class="contact-main">
                         <span class="contact-name">{{ contact.name }}</span>
-                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span>{% if contact.alternate_phone %}<span>Alt: {{ contact.alternate_phone }}</span>{% endif %}<span class="badge">{{ contact.visitor_type }}</span><span>Agent: {{ contact.agent_name or "Unassigned" }}</span></div>
+                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span>{% if contact.alternate_phone %}<span>Alt: {{ contact.alternate_phone }}</span>{% endif %}<span class="badge">{{ contact.visitor_type }}</span><span>Type: {{ contact.property_type or "Not set" }}</span><span>Beds: {{ contact.bedrooms or "Not set" }}</span><span>Areas: {{ contact.preferred_areas or "Not set" }}</span><span>Agent: {{ contact.agent_name or "Unassigned" }}</span></div>
                         <p class="contact-note">{{ contact.notes or "No notes yet" }}</p>
                         <div class="contact-actions">
                             <a class="button small-button" href="{{ url_for('tasks', contact_id=contact.id) }}">Create task</a>

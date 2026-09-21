@@ -98,6 +98,28 @@
                 </div>
             </div>
 
+            <div class="row-3">
+                <div>
+                    <label for="property_type">Property Type</label>
+                    <select id="property_type" name="property_type">
+                        <option value="single-family" {% if contact.property_type == "single-family" %}selected{% endif %}>Single Family</option>
+                        <option value="condo" {% if contact.property_type == "condo" %}selected{% endif %}>Condo</option>
+                        <option value="townhome" {% if contact.property_type == "townhome" %}selected{% endif %}>Townhome</option>
+                        <option value="multi-family" {% if contact.property_type == "multi-family" %}selected{% endif %}>Multi-Family</option>
+                        <option value="land" {% if contact.property_type == "land" %}selected{% endif %}>Land</option>
+                        <option value="other" {% if contact.property_type == "other" %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="bedrooms">Bedrooms</label>
+                    <input id="bedrooms" type="text" name="bedrooms" value="{{ contact.bedrooms }}" maxlength="10" placeholder="e.g. 3 or 3+">
+                </div>
+                <div>
+                    <label for="preferred_areas">Preferred Areas</label>
+                    <input id="preferred_areas" type="text" name="preferred_areas" value="{{ contact.preferred_areas }}" placeholder="Neighborhoods or cities">
+                </div>
+            </div>
+
             <label for="agent-id">Hosted By</label>
             <select id="agent-id" name="agent_id">
                 <option value="">Unassigned</option>

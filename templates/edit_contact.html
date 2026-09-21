@@ -14,6 +14,10 @@
         label { display: block; margin-top: 15px; color: var(--ink); font-size: 13px; font-weight: 800; }
         input, select, textarea { display: block; box-sizing: border-box; width: 100%; min-height: 46px; margin-top: 6px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; font-size: 16px; }
         textarea { min-height: 120px; resize: vertical; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .row-2 label { margin-top: 15px; }
+        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .row-3 label { margin-top: 15px; }
         input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
         .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 26px; }
         button, a { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; padding: 11px 16px; border: 0; border-radius: 9px; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; }
@@ -27,14 +31,72 @@
         <h1>{% if is_new %}New Contact{% else %}Edit Contact{% endif %}</h1>
         <p class="intro">{% if is_new %}Add a contact and save their lead information.{% else %}Update contact details and save the latest lead information.{% endif %}</p>
         <form method="post" action="{% if is_new %}{{ url_for('create_contact') }}{% endif %}">
-            <label for="name">Name</label>
-            <input id="name" type="text" name="name" value="{{ contact.name }}" required>
+            <div class="row-2">
+                <div>
+                    <label for="first_name">First Name</label>
+                    <input id="first_name" type="text" name="first_name" value="{{ contact.first_name }}" required>
+                </div>
+                <div>
+                    <label for="last_name">Last Name</label>
+                    <input id="last_name" type="text" name="last_name" value="{{ contact.last_name }}" required>
+                </div>
+            </div>
 
             <label for="email">Email</label>
             <input id="email" type="email" name="email" value="{{ contact.email }}" required>
 
-            <label for="phone">Phone</label>
-            <input id="phone" type="tel" name="phone" value="{{ contact.phone }}" autocomplete="tel">
+            <div class="row-2">
+                <div>
+                    <label for="phone">Phone</label>
+                    <input id="phone" type="tel" name="phone" value="{{ contact.phone }}" autocomplete="tel">
+                </div>
+                <div>
+                    <label for="alternate_phone">Alternate Phone</label>
+                    <input id="alternate_phone" type="tel" name="alternate_phone" value="{{ contact.alternate_phone }}" autocomplete="tel">
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div>
+                    <label for="preferred_contact_method">Preferred Contact Method</label>
+                    <select id="preferred_contact_method" name="preferred_contact_method">
+                        <option value="email" {% if contact.preferred_contact_method == "email" %}selected{% endif %}>Email</option>
+                        <option value="text" {% if contact.preferred_contact_method == "text" %}selected{% endif %}>Text</option>
+                        <option value="phone" {% if contact.preferred_contact_method == "phone" %}selected{% endif %}>Phone</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="best_time_to_contact">Best Time to Contact</label>
+                    <select id="best_time_to_contact" name="best_time_to_contact">
+                        <option value="morning" {% if contact.best_time_to_contact == "morning" %}selected{% endif %}>Morning (8am - 12pm)</option>
+                        <option value="afternoon" {% if contact.best_time_to_contact == "afternoon" %}selected{% endif %}>Afternoon (12pm - 4pm)</option>
+                        <option value="evening" {% if contact.best_time_to_contact == "evening" %}selected{% endif %}>Evening (4pm - 8pm)</option>
+                        <option value="anytime" {% if contact.best_time_to_contact == "anytime" or not contact.best_time_to_contact %}selected{% endif %}>Anytime</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div>
+                    <label for="lead_status">Lead Status</label>
+                    <select id="lead_status" name="lead_status">
+                        <option value="new" {% if contact.lead_status == "new" or not contact.lead_status %}selected{% endif %}>New</option>
+                        <option value="contacted" {% if contact.lead_status == "contacted" %}selected{% endif %}>Contacted</option>
+                        <option value="qualified" {% if contact.lead_status == "qualified" %}selected{% endif %}>Qualified</option>
+                        <option value="nurturing" {% if contact.lead_status == "nurturing" %}selected{% endif %}>Nurturing</option>
+                        <option value="under-contract" {% if contact.lead_status == "under-contract" %}selected{% endif %}>Under Contract</option>
+                        <option value="closed" {% if contact.lead_status == "closed" %}selected{% endif %}>Closed</option>
+                        <option value="lost" {% if contact.lead_status == "lost" %}selected{% endif %}>Lost</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="currently">Currently</label>
+                    <select id="currently" name="currently" required>
+                        <option value="renting" {% if contact.currently == "renting" %}selected{% endif %}>Renting</option>
+                        <option value="own" {% if contact.currently == "own" %}selected{% endif %}>Own</option>
+                    </select>
+                </div>
+            </div>
 
             <label for="agent-id">Hosted By</label>
             <select id="agent-id" name="agent_id">
@@ -44,33 +106,33 @@
                 {% endfor %}
             </select>
 
-            <label for="visitor_type">Visitor Type</label>
-            <select id="visitor_type" name="visitor_type" required>
-                {% for value, label in [("buyer", "Buyer"), ("seller", "Seller"), ("neighbor", "Neighbor"), ("just-looking", "Just Looking")] %}
-                <option value="{{ value }}" {% if contact.visitor_type == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="currently">Currently</label>
-            <select id="currently" name="currently" required>
-                <option value="renting" {% if contact.currently == "renting" %}selected{% endif %}>Renting</option>
-                <option value="own" {% if contact.currently == "own" %}selected{% endif %}>Own</option>
-            </select>
-
-            <label for="timeline">Timeline</label>
-            <select id="timeline" name="timeline" required>
-                <option value="0-3" {% if contact.timeline == "0-3" %}selected{% endif %}>0-3 months</option>
-                <option value="3-6" {% if contact.timeline == "3-6" %}selected{% endif %}>3-6 months</option>
-                <option value="6-12" {% if contact.timeline == "6-12" %}selected{% endif %}>6-12 months</option>
-                <option value="browsing" {% if contact.timeline == "browsing" %}selected{% endif %}>Just browsing</option>
-            </select>
-
-            <label for="preapproval">Pre-approval</label>
-            <select id="preapproval" name="preapproval" required>
-                <option value="yes" {% if contact.preapproval == "yes" %}selected{% endif %}>Yes</option>
-                <option value="no" {% if contact.preapproval == "no" %}selected{% endif %}>No</option>
-                <option value="unknown" {% if contact.preapproval == "unknown" %}selected{% endif %}>Not sure</option>
-            </select>
+            <div class="row-3">
+                <div>
+                    <label for="visitor_type">Visitor Type</label>
+                    <select id="visitor_type" name="visitor_type" required>
+                        {% for value, label in [("buyer", "Buyer"), ("seller", "Seller"), ("renter", "Renter"), ("landlord", "Landlord"), ("expired", "Expired"), ("fsbo", "FSBO"), ("referral", "Referral"), ("open-house", "Open House"), ("past-client", "Past Client"), ("new-construction", "New Construction"), ("luxury", "Luxury"), ("investor", "Investor"), ("relocation", "Relocation")] %}
+                        <option value="{{ value }}" {% if contact.visitor_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="timeline">Timeline</label>
+                    <select id="timeline" name="timeline" required>
+                        <option value="0-3" {% if contact.timeline == "0-3" %}selected{% endif %}>0-3 months</option>
+                        <option value="3-6" {% if contact.timeline == "3-6" %}selected{% endif %}>3-6 months</option>
+                        <option value="6-12" {% if contact.timeline == "6-12" %}selected{% endif %}>6-12 months</option>
+                        <option value="browsing" {% if contact.timeline == "browsing" %}selected{% endif %}>Just browsing</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="preapproval">Pre-approval</label>
+                    <select id="preapproval" name="preapproval" required>
+                        <option value="yes" {% if contact.preapproval == "yes" %}selected{% endif %}>Yes</option>
+                        <option value="no" {% if contact.preapproval == "no" %}selected{% endif %}>No</option>
+                        <option value="unknown" {% if contact.preapproval == "unknown" %}selected{% endif %}>Not sure</option>
+                    </select>
+                </div>
+            </div>
 
             <label for="notes">Thank you for visiting message:</label>
             <textarea id="notes" name="notes" rows="5">{{ contact.notes }}</textarea>

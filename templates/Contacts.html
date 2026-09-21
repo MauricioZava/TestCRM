@@ -10,9 +10,11 @@
         * { box-sizing: border-box; }
         body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
         .page { max-width: 1480px; margin: 0 auto; }
-        .topbar { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr) auto; align-items: end; gap: 24px; margin-bottom: 30px; }
+        .topbar { display: grid; grid-template-columns: minmax(330px, 420px) minmax(0, 1fr) auto; align-items: end; gap: 24px; margin-bottom: 30px; }
         .search-control label { display: block; margin: 0 0 6px; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        .search-input-wrap { position: relative; }
+        .search-row { display: flex; align-items: center; gap: 10px; }
+        .search-row .button { flex: 0 0 auto; white-space: nowrap; }
+        .search-input-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
         .search-input-wrap::before { position: absolute; top: 50%; left: 12px; color: var(--muted); content: "⌕"; font-size: 20px; line-height: 1; transform: translateY(-55%); }
         .search-control input { width: 100%; min-height: 42px; padding: 9px 34px 9px 34px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.88); color: var(--ink); font: inherit; }
         .search-control input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
@@ -53,23 +55,88 @@
         .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
         @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } }
         @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-actions { justify-content: flex-start; } }
+
+        /* SIDEBAR DASHBOARD LAYOUT */
+        body { min-height: 100vh; padding: 0; }
+        .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+        .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; padding: 28px 18px; background: #172033; color: #fff; }
+        .brand { padding: 0 14px 30px; border-bottom: 1px solid rgba(255,255,255,.12); }
+        .brand-mark { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 14px; border-radius: 12px; background: #ffb547; color: #172033; font-size: 15px; font-weight: 800; }
+        .brand strong, .brand small { display: block; }
+        .brand strong { font-size: 20px; }
+        .brand small { margin-top: 5px; color: #aeb9ca; font-size: 12px; }
+        .sidebar-nav { display: grid; gap: 9px; margin-top: 28px; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; letter-spacing: .02em; transition: background .2s ease, color .2s ease, transform .2s ease; }
+        .sidebar-nav a::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: #172033; font-size: 13px; font-weight: 800; }
+        .nav-dashboard::before { content: "D"; background: #ffb547; }
+        .nav-contacts::before { content: "C"; background: #f28f8f; }
+        .nav-properties::before { content: "P"; background: #6ed3cf; }
+        .nav-agents::before { content: "A"; background: #f6c177; }
+        .nav-open-house::before { content: "O"; background: #b7e4c7; }
+        .nav-signins::before { content: "S"; background: #9ca7ff; }
+        .nav-analytics::before { content: "A"; background: #c1ccd9; }
+        .nav-settings::before { content: "\2699"; background: #c1ccd9; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { transform: translateX(3px); background: rgba(255,255,255,.1); color: #fff; }
+        .sidebar-nav a.active { border-left-color: #ffb547; }
+        .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
+        .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); }
+        @media (max-width: 768px) {
+            .app-shell { display: block; }
+            .sidebar { position: relative; min-height: auto; padding: 18px; }
+            .brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; }
+            .brand-mark { margin: 0; }
+            .brand small { margin-top: 2px; }
+            .sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; }
+            .sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; }
+            .sidebar-nav a.active { border-bottom-color: #ffb547; }
+            .sidebar-footer { display: none; }
+            .content-shell { padding: 28px 16px; }
+        }
     </style>
 </head>
 <body>
-<main class="page">
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand">
+            <span class="brand-mark">FH</span>
+            <div>
+                <strong>The Best Of Florida Homes</strong>
+                <small>Lead workspace</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="active nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
+            <a class="nav-analytics" href="{{ url_for('tasks') }}">Tasks</a>
+            <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
+            <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
+            <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
+            <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
+            <a href="{{ url_for('export_csv') }}">Export CSV</a>
+            <a class="nav-settings" href="{{ url_for('logout') }}">Log Out</a>
+        </nav>
+
+        <div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div>
+    </aside>
+
+    <main class="content-shell">
+<div class="page">
     <header class="topbar">
         <div class="search-control">
             <label for="contact-search">Find a contact</label>
-            <div class="search-input-wrap">
-                <input id="contact-search" type="search" placeholder="Search names or emails..." autocomplete="off" aria-describedby="search-count">
-                <button class="search-clear" id="search-clear" type="button" aria-label="Clear contact search" hidden>&times;</button>
+            <div class="search-row">
+                <div class="search-input-wrap">
+                    <input id="contact-search" type="search" placeholder="Search names or emails..." autocomplete="off" aria-describedby="search-count">
+                    <button class="search-clear" id="search-clear" type="button" aria-label="Clear contact search" hidden>&times;</button>
+                </div>
+                <a class="button" href="{{ url_for('create_contact') }}">New contact</a>
             </div>
             <span class="search-count" id="search-count" aria-live="polite"></span>
         </div>
         <div class="title-block">
             <p class="eyebrow">Lead workspace</p>
             <h1>Contacts</h1>
-            <p class="subtitle">Keep every visitor relationship organized, current, and ready for the next conversation.</p>
         </div>
         <nav class="top-actions" aria-label="Contacts navigation">
             <a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a>
@@ -81,7 +148,7 @@
         <section class="panel" aria-labelledby="contact-list-title">
             <div class="panel-header">
                 <div><h2 id="contact-list-title">Your contacts</h2><p class="panel-intro">Visitors saved from your open house sign-ins.</p></div>
-                <div class="top-actions"><span class="count">{{ contacts|length }} contact{% if contacts|length != 1 %}s{% endif %}</span><a class="button" href="{{ url_for('create_contact') }}">New contact</a></div>
+                <div class="top-actions"><span class="count">{{ contacts|length }} contact{% if contacts|length != 1 %}s{% endif %}</span></div>
             </div>
             {% if contacts %}
             <div class="contact-list">
@@ -90,8 +157,11 @@
                     data-search="{{ [contact.name, contact.email]|join(' ')|lower|e }}"
                     data-contact-id="{{ contact.id }}"
                     data-name="{{ (contact.name or '')|e }}"
+                    data-first-name="{{ (contact.first_name or '')|e }}"
+                    data-last-name="{{ (contact.last_name or '')|e }}"
                     data-email="{{ (contact.email or '')|e }}"
                     data-phone="{{ (contact.phone or '')|e }}"
+                    data-alternate-phone="{{ (contact.alternate_phone or '')|e }}"
                     data-visitor-type="{{ (contact.visitor_type or '')|e }}"
                     data-currently="{{ (contact.currently or '')|e }}"
                     data-timeline="{{ (contact.timeline or '')|e }}"
@@ -103,7 +173,7 @@
                     data-notes="{{ (contact.notes or '')|e }}">
                     <div class="contact-main">
                         <span class="contact-name">{{ contact.name }}</span>
-                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span><span class="badge">{{ contact.visitor_type }}</span><span>Agent: {{ contact.agent_name or "Unassigned" }}</span></div>
+                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span>{% if contact.alternate_phone %}<span>Alt: {{ contact.alternate_phone }}</span>{% endif %}<span class="badge">{{ contact.visitor_type }}</span><span>Agent: {{ contact.agent_name or "Unassigned" }}</span></div>
                         <p class="contact-note">{{ contact.notes or "No notes yet" }}</p>
                         <div class="contact-actions">
                             <a class="button small-button" href="{{ url_for('tasks', contact_id=contact.id) }}">Create task</a>
@@ -123,7 +193,9 @@
         </section>
 
     </div>
-</main>
+</div>
+    </main>
+</div>
 <script>
     const searchInput = document.getElementById("contact-search");
     const searchClear = document.getElementById("search-clear");

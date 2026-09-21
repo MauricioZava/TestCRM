@@ -239,14 +239,20 @@
             <div class="eyebrow">Guest details</div>
             <h2 class="form-heading">Tell us about yourself</h2>
 
-            <label>Name</label>
-            <input type="text" name="name" required>
+            <label>First Name</label>
+            <input type="text" name="first_name" required>
+
+            <label>Last Name</label>
+            <input type="text" name="last_name" required>
 
             <label>Email</label>
             <input type="email" name="email" required>
 
             <label>Phone</label>
             <input type="text" name="phone">
+
+            <label>Alternate Phone</label>
+            <input type="text" name="alternate_phone">
 
             <label>Zip Code</label>
             <input type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" maxlength="10">
@@ -257,8 +263,17 @@
                     <select name="visitor_type" required>
                         <option value="buyer">Buyer</option>
                         <option value="seller">Seller</option>
-                        <option value="neighbor">Neighbor</option>
-                        <option value="just-looking">Just Looking</option>
+                        <option value="renter">Renter</option>
+                        <option value="landlord">Landlord</option>
+                        <option value="expired">Expired</option>
+                        <option value="fsbo">FSBO</option>
+                        <option value="referral">Referral</option>
+                        <option value="open-house">Open House</option>
+                        <option value="past-client">Past Client</option>
+                        <option value="new-construction">New Construction</option>
+                        <option value="luxury">Luxury</option>
+                        <option value="investor">Investor</option>
+                        <option value="relocation">Relocation</option>
                     </select>
                 </div>
                 <div>

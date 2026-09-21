@@ -640,6 +640,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
             <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
             <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
             <a href="{{ url_for('export_csv') }}">Export CSV</a>
+            <a class="nav-settings" href="{{ url_for('logout') }}">Log Out</a>
         </nav>
 
         <div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div>
@@ -732,6 +733,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
         <div class="contact-details">
             <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value" title="{{ s.email }}">{{ s.email }}</span></div>
             <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ s.phone or "Not provided" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Alt. Phone</span><span class="detail-value">{{ s.alternate_phone or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Hosted by</span><span class="detail-value">{{ s.agent_name or "Not assigned" }}</span></div>
             <div class="detail-item"><span class="detail-label">Zip Code</span><span class="detail-value">{{ s.zip_code or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Timeline</span><span class="detail-value">{{ s.timeline }}</span></div>

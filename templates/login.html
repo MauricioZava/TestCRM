@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - TestCRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #24435f;
+            --muted: #6d879e;
+            --blue: #4c96c9;
+            --blue-dark: #326f9f;
+            --sky: #dceefa;
+            --line: #b9d3e6;
+            --surface: #fbfdff;
+            --soft: #edf7fd;
+            --danger: #c94c4c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 14px;
+            display: grid;
+            place-items: center;
+            color: var(--ink);
+            font-family: "DM Sans", sans-serif;
+            background: var(--sky);
+            background-image: radial-gradient(circle at 8% 10%, rgba(255,255,255,.9), transparent 25%), radial-gradient(circle at 92% 88%, rgba(124,174,224,.3), transparent 32%), linear-gradient(135deg, #edf8ff, #cfe6f7);
+        }
+
+        .container {
+            position: relative;
+            width: min(100%, 380px);
+            padding: clamp(26px, 4vw, 36px);
+            border: 1px solid rgba(86,139,180,.28);
+            border-radius: 18px;
+            background: var(--surface);
+            box-shadow: 0 24px 70px rgba(66,112,150,.2);
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; left: 0;
+            height: 7px;
+            border-radius: 18px 18px 0 0;
+            background: linear-gradient(90deg, #5a9fd0, #a9d9f2, #7caee0);
+        }
+
+        h1 {
+            margin: 6px 0 4px;
+            color: var(--ink);
+            font-family: "Space Grotesk", sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .intro {
+            margin: 0 0 20px;
+            color: var(--muted);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            min-height: 42px;
+            margin-top: 5px;
+            padding: 8px 12px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fff;
+            color: var(--ink);
+            font: inherit;
+            font-size: 15px;
+        }
+
+        input:focus {
+            border-color: var(--blue);
+            outline: none;
+            background: #f4faff;
+            box-shadow: 0 0 0 4px rgba(76,150,201,.15);
+        }
+
+        button {
+            width: 100%;
+            min-height: 46px;
+            margin-top: 20px;
+            border: 0;
+            border-radius: 8px;
+            background: var(--blue);
+            color: #fff;
+            font: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:hover { background: var(--blue-dark); }
+
+        .error {
+            margin-top: 14px;
+            padding: 9px 12px;
+            border: 1px solid rgba(201,76,76,.4);
+            border-radius: 8px;
+            background: rgba(201,76,76,.08);
+            color: var(--danger);
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome back</h1>
+        <p class="intro">Sign in to access the CRM dashboard.</p>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" autocomplete="off">
+            <input type="hidden" name="next" value="{{ next }}">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required autofocus>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Sign In</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import secrets
 import sqlite3
 import smtplib
 import csv
@@ -6,28 +7,165 @@ import json
 import threading
 import time
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from email.mime.text import MIMEText
-from flask import Flask, render_template, request, redirect, url_for, make_response
+from werkzeug.security import check_password_hash, generate_password_hash
+from flask import Flask, render_template, request, redirect, url_for, make_response, session
 
-from flask import Flask
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.jinja_env.auto_reload = True
 DB_NAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "database.db")
 
 # -----------------------------
+# SECURITY / AUTH CONFIGURATION
+# -----------------------------
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
+SECRET_KEY_FILE = os.path.join(APP_DIR, ".secret_key")
+
+
+def _load_or_create_secret_key():
+    env_key = os.environ.get("SECRET_KEY")
+    if env_key:
+        return env_key
+    if os.path.exists(SECRET_KEY_FILE):
+        with open(SECRET_KEY_FILE, "r", encoding="utf-8") as key_file:
+            existing = key_file.read().strip()
+            if existing:
+                return existing
+    new_key = secrets.token_hex(32)
+    with open(SECRET_KEY_FILE, "w", encoding="utf-8") as key_file:
+        key_file.write(new_key)
+    return new_key
+
+
+app.config["SECRET_KEY"] = _load_or_create_secret_key()
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=8)
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+# Cookies are only sent over HTTPS unless FLASK_DEBUG is explicitly enabled for local development.
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_DEBUG", "0") != "1"
+
+# Temporary login credentials — override with ADMIN_USERNAME / ADMIN_PASSWORD (or ADMIN_PASSWORD_HASH)
+# environment variables before deploying anywhere other than your own machine.
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "Maury")
+ADMIN_PASSWORD_HASH = os.environ.get("ADMIN_PASSWORD_HASH") or generate_password_hash(
+    os.environ.get("ADMIN_PASSWORD", "Maury")
+)
+
+# Endpoints reachable without signing in: the login page, static assets, and the public
+# open-house visitor kiosk form.
+PUBLIC_ENDPOINTS = {"login", "static", "signin"}
+
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_LOCKOUT_SECONDS = 300
+_login_attempts = {}
+_login_attempts_lock = threading.Lock()
+
+
+def _client_ip():
+    return request.remote_addr or "unknown"
+
+
+def _is_locked_out(ip):
+    with _login_attempts_lock:
+        record = _login_attempts.get(ip)
+        if not record:
+            return 0
+        if record["count"] >= MAX_LOGIN_ATTEMPTS and time.time() < record["locked_until"]:
+            return int(record["locked_until"] - time.time())
+        return 0
+
+
+def _register_failed_login(ip):
+    with _login_attempts_lock:
+        record = _login_attempts.setdefault(ip, {"count": 0, "locked_until": 0})
+        record["count"] += 1
+        if record["count"] >= MAX_LOGIN_ATTEMPTS:
+            record["locked_until"] = time.time() + LOGIN_LOCKOUT_SECONDS
+
+
+def _clear_failed_logins(ip):
+    with _login_attempts_lock:
+        _login_attempts.pop(ip, None)
+
+
+@app.before_request
+def require_login():
+    endpoint = request.endpoint
+    if endpoint is None or endpoint in PUBLIC_ENDPOINTS:
+        return None
+    if not session.get("logged_in"):
+        return redirect(url_for("login", next=request.path))
+    return None
+
+
+@app.after_request
+def set_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src https://fonts.gstatic.com; "
+        "img-src 'self' data:; "
+        "frame-ancestors 'none'"
+    )
+    if not app.debug:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if session.get("logged_in"):
+        return redirect(url_for("dashboard"))
+
+    error = None
+    if request.method == "POST":
+        ip = _client_ip()
+        remaining_lockout = _is_locked_out(ip)
+        if remaining_lockout:
+            error = f"Too many failed attempts. Try again in {remaining_lockout} seconds."
+        else:
+            username = request.form.get("username", "")
+            password = request.form.get("password", "")
+            if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
+                _clear_failed_logins(ip)
+                session.clear()
+                session["logged_in"] = True
+                session["username"] = username
+                session.permanent = True
+                next_url = request.args.get("next") or request.form.get("next")
+                if next_url and next_url.startswith("/") and not next_url.startswith("//"):
+                    return redirect(next_url)
+                return redirect(url_for("dashboard"))
+            _register_failed_login(ip)
+            error = "Invalid username or password."
+
+    return render_template("login.html", error=error, next=request.args.get("next", ""))
+
+
+@app.route("/logout", methods=["GET", "POST"])
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
+# -----------------------------
 # SMTP CONFIGURATION
 # -----------------------------
 SMTP_ENABLED = True
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-SMTP_USERNAME = "maury.zavala.68@gmail.com"
-SMTP_PASSWORD = "zwmlarsyftfsccxo"
-SMTP_FROM_EMAIL = "maury.zavala.68@gmail.com"
+SMTP_SERVER = os.environ.get("SMTP_SERVER", "smtp.gmail.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "maury.zavala.68@gmail.com")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "zwmlarsyftfsccxo")
+SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", SMTP_USERNAME)
 task_scheduler_started = False
 task_scheduler_lock = threading.Lock()
 
@@ -35,7 +173,6 @@ task_scheduler_lock = threading.Lock()
 # DELETE SIGN-IN
 # -----------------------------
 
-from flask import render_template
 @app.route("/")
 def index():
     return redirect(url_for("dashboard"))
@@ -89,7 +226,7 @@ def export_csv():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
-         SELECT id, name, email, phone, visitor_type, currently,
+         SELECT id, first_name, last_name, email, phone, visitor_type, currently,
              working_with_broker, zip_code, heard_about_us, timeline,
              preapproval, notes, motivation_score, followup_message,
              next_steps_json, created_at
@@ -104,7 +241,7 @@ def export_csv():
     writer = csv.writer(output)
 
     writer.writerow([
-        "ID", "Name", "Email", "Phone", "Visitor Type", "Currently",
+        "ID", "First Name", "Last Name", "Email", "Phone", "Visitor Type", "Currently",
         "Timeline", "Preapproval", "Notes", "Motivation Score",
         "Follow-Up Message", "Next Steps JSON", "Created At"
     ])
@@ -640,12 +777,25 @@ def init_db():
         )
     """)
     existing_columns = {row[1] for row in c.execute("PRAGMA table_info(signins)").fetchall()}
-    for column in ("working_with_broker", "zip_code", "heard_about_us", "is_contact", "dashboard_hidden", "agent_id", "open_house_id"):
+    for column in ("working_with_broker", "zip_code", "heard_about_us", "is_contact", "dashboard_hidden", "agent_id", "open_house_id", "first_name", "last_name", "alternate_phone", "preferred_contact_method", "best_time_to_contact", "lead_status"):
         if column not in existing_columns:
             column_type = "INTEGER" if column in ("agent_id", "open_house_id") else "INTEGER DEFAULT 0" if column == "is_contact" else "TEXT"
             if column == "dashboard_hidden":
                 column_type = "INTEGER DEFAULT 0"
             c.execute(f"ALTER TABLE signins ADD COLUMN {column} {column_type}")
+
+    # One-time backfill: split any legacy full "name" values into first_name / last_name.
+    if "first_name" not in existing_columns or "last_name" not in existing_columns:
+        legacy_rows = c.execute(
+            "SELECT id, name FROM signins WHERE name IS NOT NULL AND name != '' "
+            "AND (first_name IS NULL OR first_name = '')"
+        ).fetchall()
+        for row_id, full_name in legacy_rows:
+            parts = full_name.strip().split(" ", 1)
+            first = parts[0] if parts else ""
+            last = parts[1] if len(parts) > 1 else ""
+            c.execute("UPDATE signins SET first_name = ?, last_name = ? WHERE id = ?", (first, last, row_id))
+
     conn.commit()
     conn.close()
 
@@ -737,7 +887,8 @@ def generate_next_steps(visitor_type, score):
 @app.route("/signin", methods=["GET", "POST"])
 def signin():
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
         email = request.form.get("email", "").strip()
         phone = request.form.get("phone", "").strip()
         visitor_type = request.form.get("visitor_type", "").strip()
@@ -786,12 +937,12 @@ def signin():
         agent_id = agent_id or submitted_agent_id
         c.execute("""
             INSERT INTO signins (
-                name, email, phone, visitor_type, currently, working_with_broker,
+                first_name, last_name, email, phone, alternate_phone, visitor_type, currently, working_with_broker,
                 zip_code, heard_about_us, timeline, preapproval, notes, agent_id, open_house_id,
                 motivation_score, followup_message, next_steps_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-            name, email, phone, visitor_type, currently, working_with_broker,
+            first_name, last_name, email, phone, alternate_phone, visitor_type, currently, working_with_broker,
             zip_code, heard_about_us, timeline, preapproval, notes, agent_id, open_house_id,
             motivation_score, followup_message, next_steps_json
         ))
@@ -840,7 +991,7 @@ def dashboard():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
-         SELECT signins.id, signins.name, signins.email, signins.phone, signins.visitor_type, signins.currently,
+         SELECT signins.id, signins.first_name, signins.last_name, signins.email, signins.phone, signins.alternate_phone, signins.visitor_type, signins.currently,
              signins.working_with_broker, signins.zip_code, signins.heard_about_us, signins.is_contact, signins.dashboard_hidden, signins.timeline,
              signins.preapproval, signins.notes, signins.motivation_score, signins.followup_message,
              signins.next_steps_json, signins.created_at, agents.first_name, agents.middle_name, agents.last_name
@@ -864,7 +1015,7 @@ def dashboard():
 
     c.execute("""
         SELECT tasks.id, tasks.title, tasks.priority, tasks.status, tasks.notes,
-               signins.name, signins.email
+               signins.first_name, signins.last_name, signins.email
         FROM tasks
         JOIN signins ON signins.id = tasks.signin_id
         ORDER BY CASE tasks.status WHEN 'Open' THEN 0 ELSE 1 END, tasks.created_at DESC
@@ -880,32 +1031,35 @@ def dashboard():
             "priority": row[2],
             "status": row[3],
             "notes": row[4],
-            "client_name": row[5],
-            "client_email": row[6],
+            "client_name": " ".join(part for part in (row[5], row[6]) if part),
+            "client_email": row[7],
         }
         for row in task_rows
     ]
     for row in rows:
         signins.append({
             "id": row[0],
-            "name": row[1],
-            "email": row[2],
-            "phone": row[3],
-            "visitor_type": row[4],
-            "currently": row[5],
-            "working_with_broker": row[6],
-            "zip_code": row[7],
-            "heard_about_us": row[8],
-            "is_contact": bool(row[9]),
-            "dashboard_hidden": bool(row[10]),
-            "timeline": row[11],
-            "preapproval": row[12],
-            "notes": row[13],
-            "motivation_score": row[14],
-            "followup_message": row[15],
-            "next_steps_json": json.loads(row[16]),
-            "created_at": row[17],
-            "agent_name": " ".join(part for part in row[18:21] if part),
+            "first_name": row[1],
+            "last_name": row[2],
+            "name": " ".join(part for part in (row[1], row[2]) if part),
+            "email": row[3],
+            "phone": row[4],
+            "alternate_phone": row[5],
+            "visitor_type": row[6],
+            "currently": row[7],
+            "working_with_broker": row[8],
+            "zip_code": row[9],
+            "heard_about_us": row[10],
+            "is_contact": bool(row[11]),
+            "dashboard_hidden": bool(row[12]),
+            "timeline": row[13],
+            "preapproval": row[14],
+            "notes": row[15],
+            "motivation_score": row[16],
+            "followup_message": row[17],
+            "next_steps_json": json.loads(row[18]),
+            "created_at": row[19],
+            "agent_name": " ".join(part for part in row[20:23] if part),
         })
 
 
@@ -974,9 +1128,14 @@ Looking forward to connecting with you.
 
 Warm regards,"""
         contact = {
-            "name": "",
+            "first_name": "",
+            "last_name": "",
             "email": "",
             "phone": "",
+            "alternate_phone": "",
+            "preferred_contact_method": "email",
+            "best_time_to_contact": "anytime",
+            "lead_status": "new",
             "visitor_type": "buyer",
             "currently": "renting",
             "timeline": "browsing",
@@ -989,9 +1148,14 @@ Warm regards,"""
         conn.close()
         return render_template("edit_contact.html", contact=contact, is_new=True, agents=agents)
 
-    name = request.form.get("name", "").strip()
+    first_name = request.form.get("first_name", "").strip()
+    last_name = request.form.get("last_name", "").strip()
     email = request.form.get("email", "").strip()
     phone = request.form.get("phone", "").strip()
+    alternate_phone = request.form.get("alternate_phone", "").strip()
+    preferred_contact_method = request.form.get("preferred_contact_method", "email").strip()
+    best_time_to_contact = request.form.get("best_time_to_contact", "anytime").strip()
+    lead_status = request.form.get("lead_status", "new").strip()
     visitor_type = request.form.get("visitor_type", "buyer").strip()
     currently = request.form.get("currently", "renting").strip()
     working_with_broker = "yes" if request.form.get("working_with_broker") == "yes" else "no"
@@ -1009,12 +1173,14 @@ Warm regards,"""
     conn = sqlite3.connect(DB_NAME)
     conn.execute("""
         INSERT INTO signins (
-            name, email, phone, visitor_type, currently, working_with_broker,
+            first_name, last_name, email, phone, alternate_phone, preferred_contact_method, best_time_to_contact, lead_status,
+            visitor_type, currently, working_with_broker,
             zip_code, heard_about_us, is_contact, timeline, preapproval, notes,
             motivation_score, followup_message, next_steps_json, agent_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        name, email, phone, visitor_type, currently, working_with_broker,
+        first_name, last_name, email, phone, alternate_phone, preferred_contact_method, best_time_to_contact, lead_status,
+        visitor_type, currently, working_with_broker,
         zip_code, heard_about_us, timeline, preapproval, notes,
         motivation_score, followup_message, next_steps_json, agent_id
     ))
@@ -1035,7 +1201,7 @@ def contacts():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
-         SELECT signins.id, signins.name, signins.email, signins.phone, signins.visitor_type, signins.currently,
+         SELECT signins.id, signins.first_name, signins.last_name, signins.email, signins.phone, signins.alternate_phone, signins.visitor_type, signins.currently,
              signins.working_with_broker, signins.zip_code, signins.heard_about_us, signins.timeline,
              signins.preapproval, signins.notes, signins.motivation_score, signins.followup_message,
              signins.next_steps_json, signins.created_at,
@@ -1051,22 +1217,25 @@ def contacts():
     contacts = [
         {
             "id": row[0],
-            "name": row[1],
-            "email": row[2],
-            "phone": row[3],
-            "visitor_type": row[4],
-            "currently": row[5],
-            "working_with_broker": row[6],
-            "zip_code": row[7],
-            "heard_about_us": row[8],
-            "timeline": row[9],
-            "preapproval": row[10],
-            "notes": row[11],
-            "motivation_score": row[12],
-            "followup_message": row[13],
-            "next_steps": json.loads(row[14] or "[]"),
-            "created_at": row[15],
-            "agent_name": " ".join(part for part in row[16:19] if part) or None,
+            "first_name": row[1],
+            "last_name": row[2],
+            "name": " ".join(part for part in (row[1], row[2]) if part),
+            "email": row[3],
+            "phone": row[4],
+            "alternate_phone": row[5],
+            "visitor_type": row[6],
+            "currently": row[7],
+            "working_with_broker": row[8],
+            "zip_code": row[9],
+            "heard_about_us": row[10],
+            "timeline": row[11],
+            "preapproval": row[12],
+            "notes": row[13],
+            "motivation_score": row[14],
+            "followup_message": row[15],
+            "next_steps": json.loads(row[16] or "[]"),
+            "created_at": row[17],
+            "agent_name": " ".join(part for part in row[18:21] if part) or None,
         }
         for row in rows
     ]
@@ -1081,18 +1250,26 @@ def tasks():
     selected_contact_id = request.args.get("contact_id", type=int)
 
     c.execute("""
-        SELECT id, name, email, agent_id
+        SELECT id, first_name, last_name, email, agent_id
         FROM signins
         WHERE is_contact = 1
-        ORDER BY name
+        ORDER BY first_name, last_name
     """)
-    contacts = [{"id": row[0], "name": row[1], "email": row[2], "agent_id": row[3]} for row in c.fetchall()]
+    contacts = [
+        {
+            "id": row[0],
+            "name": " ".join(part for part in (row[1], row[2]) if part),
+            "email": row[3],
+            "agent_id": row[4],
+        }
+        for row in c.fetchall()
+    ]
     c.execute("SELECT id, first_name, middle_name, last_name FROM agents ORDER BY last_name, first_name")
     agents = c.fetchall()
 
     c.execute("""
          SELECT tasks.id, tasks.signin_id, tasks.title, tasks.due_date, tasks.priority,
-             tasks.status, tasks.notes, tasks.created_at, signins.name, signins.email,
+             tasks.status, tasks.notes, tasks.created_at, signins.first_name, signins.last_name, signins.email,
              tasks.thank_you_selected, tasks.thank_you_date, tasks.thank_you_time,
              tasks.thank_you_send_now, tasks.follow_up_selected, tasks.follow_up_date,
                tasks.follow_up_time, tasks.follow_up_send_now, tasks.notes_email_selected,
@@ -1114,20 +1291,20 @@ def tasks():
             "status": row[5],
             "notes": row[6],
             "created_at": row[7],
-            "client_name": row[8],
-            "client_email": row[9],
-            "thank_you_selected": bool(row[10]),
-            "thank_you_date": row[11],
-            "thank_you_time": row[12],
-            "thank_you_send_now": bool(row[13]),
-            "follow_up_selected": bool(row[14]),
-            "follow_up_date": row[15],
-            "follow_up_time": row[16],
-            "follow_up_send_now": bool(row[17]),
-            "notes_email_selected": bool(row[18]),
-            "notes_email_date": row[19],
-            "notes_email_time": row[20],
-            "notes_email_send_now": bool(row[21]),
+            "client_name": " ".join(part for part in (row[8], row[9]) if part),
+            "client_email": row[10],
+            "thank_you_selected": bool(row[11]),
+            "thank_you_date": row[12],
+            "thank_you_time": row[13],
+            "thank_you_send_now": bool(row[14]),
+            "follow_up_selected": bool(row[15]),
+            "follow_up_date": row[16],
+            "follow_up_time": row[17],
+            "follow_up_send_now": bool(row[18]),
+            "notes_email_selected": bool(row[19]),
+            "notes_email_date": row[20],
+            "notes_email_time": row[21],
+            "notes_email_send_now": bool(row[22]),
         }
         for row in task_rows
     ]
@@ -1160,7 +1337,7 @@ def create_task():
             return "Select at least one email option.", 400
 
         conn = sqlite3.connect(DB_NAME)
-        client = conn.execute("SELECT name, email FROM signins WHERE id = ?", (signin_id,)).fetchone()
+        client = conn.execute("SELECT first_name, email FROM signins WHERE id = ?", (signin_id,)).fetchone()
         conn.close()
         if not client or not client[1]:
             return "This client does not have an email address.", 400
@@ -1254,9 +1431,9 @@ def create_task():
     conn.commit()
 
     if thank_you_send_now or follow_up_send_now or notes_email_send_now:
-        client = conn.execute("SELECT name, email FROM signins WHERE id = ?", (signin_id,)).fetchone()
+        client = conn.execute("SELECT email FROM signins WHERE id = ?", (signin_id,)).fetchone()
         conn.close()
-        if client and client[1]:
+        if client and client[0]:
             messages = []
             if thank_you_send_now:
                 messages.append("Thank you for visiting the open house. It was great meeting you!")
@@ -1264,7 +1441,7 @@ def create_task():
                 messages.append("I wanted to follow up after your open house visit. Please let me know how I can help.")
             if notes_email_send_now:
                 messages.append(notes)
-            send_email(client[1], "Open House Follow-Up", "\n\n".join(messages))
+            send_email(client[0], "Open House Follow-Up", "\n\n".join(messages))
         return redirect(url_for("tasks"))
     conn.close()
     return redirect(url_for("tasks"))
@@ -1283,9 +1460,14 @@ def edit_contact(signin_id):
     c = conn.cursor()
 
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
         email = request.form.get("email", "").strip()
         phone = request.form.get("phone", "").strip()
+        alternate_phone = request.form.get("alternate_phone", "").strip()
+        preferred_contact_method = request.form.get("preferred_contact_method", "email").strip()
+        best_time_to_contact = request.form.get("best_time_to_contact", "anytime").strip()
+        lead_status = request.form.get("lead_status", "new").strip()
         visitor_type = request.form.get("visitor_type", "").strip()
         currently = request.form.get("currently", "").strip()
         timeline = request.form.get("timeline", "").strip()
@@ -1298,12 +1480,14 @@ def edit_contact(signin_id):
         )
         c.execute("""
             UPDATE signins
-            SET name = ?, email = ?, phone = ?, visitor_type = ?, currently = ?,
+            SET first_name = ?, last_name = ?, email = ?, phone = ?, alternate_phone = ?,
+                preferred_contact_method = ?, best_time_to_contact = ?, lead_status = ?, visitor_type = ?, currently = ?,
                 timeline = ?, preapproval = ?, notes = ?, motivation_score = ?,
                 followup_message = ?, next_steps_json = ?, agent_id = ?
             WHERE id = ?
         """, (
-            name, email, phone, visitor_type, currently, timeline, preapproval,
+            first_name, last_name, email, phone, alternate_phone, preferred_contact_method, best_time_to_contact, lead_status,
+            visitor_type, currently, timeline, preapproval,
             notes, motivation_score, followup_message, next_steps_json, agent_id, signin_id
         ))
         conn.commit()
@@ -1311,7 +1495,8 @@ def edit_contact(signin_id):
         return redirect(url_for("contacts"))
 
     c.execute("""
-        SELECT id, name, email, phone, visitor_type, currently,
+        SELECT id, first_name, last_name, email, phone, alternate_phone, preferred_contact_method, best_time_to_contact, lead_status,
+               visitor_type, currently,
                timeline, preapproval, notes, agent_id
         FROM signins
         WHERE id = ?
@@ -1325,15 +1510,20 @@ def edit_contact(signin_id):
 
     contact = {
         "id": row[0],
-        "name": row[1],
-        "email": row[2],
-        "phone": row[3],
-        "visitor_type": row[4],
-        "currently": row[5],
-        "timeline": row[6],
-        "preapproval": row[7],
-        "notes": row[8],
-        "agent_id": row[9],
+        "first_name": row[1] or "",
+        "last_name": row[2] or "",
+        "email": row[3] or "",
+        "phone": row[4] or "",
+        "alternate_phone": row[5] or "",
+        "preferred_contact_method": row[6] or "email",
+        "best_time_to_contact": row[7] or "anytime",
+        "lead_status": row[8] or "new",
+        "visitor_type": row[9],
+        "currently": row[10],
+        "timeline": row[11],
+        "preapproval": row[12],
+        "notes": row[13],
+        "agent_id": row[14],
     }
     return render_template("edit_contact.html", contact=contact, is_new=False, agents=agents)
 
@@ -1342,7 +1532,7 @@ def send_email_from_dashboard(signin_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
     c.execute("""
-        SELECT name, email, followup_message
+        SELECT email, followup_message
         FROM signins
         WHERE id = ?
     """, (signin_id,))
@@ -1352,7 +1542,7 @@ def send_email_from_dashboard(signin_id):
     if not row:
         return "Sign-in record not found."
 
-    name, email, followup_message = row
+    email, followup_message = row
 
     if not email:
         return "This visitor did not provide an email address."
@@ -1398,5 +1588,8 @@ if __name__ == "__main__":
 
 
 port = int(os.environ.get("PORT", 8080))
-app.run(host="0.0.0.0", port=port, debug=True)
+# Bound to localhost so the app (and its SQLite database) is not reachable from the network/internet.
+# Set FLASK_DEBUG=1 only for local development; never enable debug mode on a shared/public host.
+debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
+app.run(host=os.environ.get("HOST", "127.0.0.1"), port=port, debug=debug_mode)
 

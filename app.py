@@ -62,4 +62,6 @@ if __name__ == "__main__":
     # Bound to localhost so the app (and its SQLite database) is not reachable from the network/internet.
     # Set FLASK_DEBUG=1 only for local development; never enable debug mode on a shared/public host.
     debug_mode = os.environ.get("FLASK_DEBUG", "0") == "1"
-    app.run(host=os.environ.get("HOST", "127.0.0.1"), port=port, debug=debug_mode)
+   # app.run(host=os.environ.get("HOST", "127.0.0.1"), port=port, debug=debug_mode)
+
+app.run(host= "0.0.0.0", port=port, debug=debug_mode)

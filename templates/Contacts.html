@@ -42,10 +42,17 @@
         .contact-row:hover, .contact-row.selected, .contact-row.search-match { border-color: #9ebce7; background: #f4f8ff; }
         .contact-row.search-current { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,199,.14); }
         .contact-main { min-width: 0; }
+        .contact-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
         .contact-name { display: block; overflow: hidden; color: var(--ink); font-size: 16px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
         .contact-name mark, .contact-email mark { padding: 1px 2px; border-radius: 3px; background: #ffcf7a; color: var(--ink); }
-        .contact-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 5px; color: var(--muted); font-size: 12px; }
-        .contact-note { margin: 9px 0 0; overflow: hidden; color: #405268; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+        .contact-sections { display: grid; grid-template-columns: repeat(3, minmax(170px, 1fr)); gap: 10px; margin-top: 10px; }
+        .meta-group { padding: 10px; border: 1px solid #e7edf4; border-radius: 10px; background: rgba(255,255,255,.7); }
+        .meta-title { margin: 0 0 8px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .meta-row { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 8px; margin-bottom: 5px; font-size: 12px; }
+        .meta-row:last-child { margin-bottom: 0; }
+        .meta-label { color: var(--muted); font-weight: 700; }
+        .meta-value { overflow-wrap: anywhere; color: var(--ink); font-weight: 600; }
+        .meta-value.contact-email { color: #194c9d; }
         .badge { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; text-transform: capitalize; }
         .score { min-width: 48px; padding: 7px 8px; border-radius: 8px; background: #eef8f3; color: var(--green); font-size: 13px; font-weight: 900; text-align: center; }
         .contact-actions { justify-content: flex-end; margin-top: 10px; }
@@ -54,7 +61,7 @@
         .small-button.delete { background: #fff0f1; color: var(--red); }
         .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
         @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } }
-        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-actions { justify-content: flex-start; } }
+        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-sections { grid-template-columns: 1fr; } .meta-row { grid-template-columns: 82px minmax(0, 1fr); } .contact-actions { justify-content: flex-start; } }
 
         /* SIDEBAR DASHBOARD LAYOUT */
         body { min-height: 100vh; padding: 0; }
@@ -72,6 +79,7 @@
         .nav-contacts::before { content: "C"; background: #f28f8f; }
         .nav-properties::before { content: "P"; background: #6ed3cf; }
         .nav-agents::before { content: "A"; background: #f6c177; }
+        .nav-brokers::before { content: "B"; background: #b7e4c7; }
         .nav-open-house::before { content: "O"; background: #b7e4c7; }
         .nav-signins::before { content: "S"; background: #9ca7ff; }
         .nav-analytics::before { content: "A"; background: #c1ccd9; }
@@ -111,6 +119,7 @@
             <a class="nav-analytics" href="{{ url_for('tasks') }}">Tasks</a>
             <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
             <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
+            <a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
             <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
             <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
             <a href="{{ url_for('export_csv') }}">Export CSV</a>
@@ -154,7 +163,7 @@
             <div class="contact-list">
                 {% for contact in contacts %}
                 <article class="contact-row"
-                    data-search="{{ [contact.name, contact.email, contact.property_type, contact.bedrooms, contact.preferred_areas]|join(' ')|lower|e }}"
+                    data-search="{{ [contact.name, contact.email, contact.property_type, contact.bedrooms, contact.preferred_areas, contact.lead_status, contact.zip_code, contact.heard_about_us]|join(' ')|lower|e }}"
                     data-contact-id="{{ contact.id }}"
                     data-name="{{ (contact.name or '')|e }}"
                     data-first-name="{{ (contact.first_name or '')|e }}"
@@ -162,6 +171,9 @@
                     data-email="{{ (contact.email or '')|e }}"
                     data-phone="{{ (contact.phone or '')|e }}"
                     data-alternate-phone="{{ (contact.alternate_phone or '')|e }}"
+                    data-preferred-contact-method="{{ (contact.preferred_contact_method or '')|e }}"
+                    data-best-time-to-contact="{{ (contact.best_time_to_contact or '')|e }}"
+                    data-lead-status="{{ (contact.lead_status or '')|e }}"
                     data-visitor-type="{{ (contact.visitor_type or '')|e }}"
                     data-currently="{{ (contact.currently or '')|e }}"
                     data-property-type="{{ (contact.property_type or '')|e }}"
@@ -175,9 +187,33 @@
                     data-agent-name="{{ (contact.agent_name or '')|e }}"
                     data-notes="{{ (contact.notes or '')|e }}">
                     <div class="contact-main">
-                        <span class="contact-name">{{ contact.name }}</span>
-                        <div class="contact-meta"><span class="contact-email">{{ contact.email or "No email" }}</span><span>{{ contact.phone or "No phone" }}</span>{% if contact.alternate_phone %}<span>Alt: {{ contact.alternate_phone }}</span>{% endif %}<span class="badge">{{ contact.visitor_type }}</span><span>Type: {{ contact.property_type or "Not set" }}</span><span>Beds: {{ contact.bedrooms or "Not set" }}</span><span>Areas: {{ contact.preferred_areas or "Not set" }}</span><span>Agent: {{ contact.agent_name or "Unassigned" }}</span></div>
-                        <p class="contact-note">{{ contact.notes or "No notes yet" }}</p>
+                        <div class="contact-head">
+                            <span class="contact-name">{{ contact.name }}</span>
+                            <span class="badge">{{ contact.visitor_type }}</span>
+                        </div>
+                        <div class="contact-sections">
+                            <section class="meta-group" aria-label="Contact details">
+                                <p class="meta-title">Contact</p>
+                                <div class="meta-row"><span class="meta-label">Email</span><span class="meta-value contact-email">{{ contact.email or "No email" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Phone</span><span class="meta-value">{{ contact.phone or "No phone" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Alt phone</span><span class="meta-value">{{ contact.alternate_phone or "Not set" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Best time</span><span class="meta-value">{{ contact.best_time_to_contact or "anytime" }}</span></div>
+                            </section>
+                            <section class="meta-group" aria-label="Lead status and source">
+                                <p class="meta-title">Lead</p>
+                                <div class="meta-row"><span class="meta-label">Status</span><span class="meta-value">{{ contact.lead_status or "new" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Contact via</span><span class="meta-value">{{ contact.preferred_contact_method or "email" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Broker</span><span class="meta-value">{{ contact.working_with_broker or "no" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Source</span><span class="meta-value">{{ contact.heard_about_us or "Not set" }}</span></div>
+                            </section>
+                            <section class="meta-group" aria-label="Property preferences">
+                                <p class="meta-title">Property</p>
+                                <div class="meta-row"><span class="meta-label">Type</span><span class="meta-value">{{ contact.property_type or "Not set" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Bedrooms</span><span class="meta-value">{{ contact.bedrooms or "Not set" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Areas</span><span class="meta-value">{{ contact.preferred_areas or "Not set" }}</span></div>
+                                <div class="meta-row"><span class="meta-label">Zip / Agent</span><span class="meta-value">{{ contact.zip_code or "Not set" }} / {{ contact.agent_name or "Unassigned" }}</span></div>
+                            </section>
+                        </div>
                         <div class="contact-actions">
                             <a class="button small-button" href="{{ url_for('tasks', contact_id=contact.id) }}">Create task</a>
                             <a class="button small-button edit" href="{{ url_for('edit_contact', signin_id=contact.id) }}">Edit Contact</a>

@@ -11,6 +11,7 @@ from models.homes import (
     insert_home, update_home, delete_home,
 )
 from models.agents import list_agents_brief
+from models.brokers import list_brokers
 
 
 @app.route("/properties", methods=["GET", "POST"])
@@ -34,6 +35,7 @@ def properties():
         rooms = request.form.get("rooms")
         lot_size = request.form.get("lot_size")
         agent_id = request.form.get("agent_id", type=int)
+        broker_id = request.form.get("broker_id", type=int)
         is_current = 1 if request.form.get("is_current") == "on" else 0
 
         # If this home is marked current, unset all others
@@ -41,9 +43,9 @@ def properties():
             unset_current_home()
 
         if action == "update" and home_id:
-            update_home(home_id, property_id, agent_id, address, city, state, zip_code, rooms, lot_size, is_current)
+            update_home(home_id, property_id, agent_id, broker_id, address, city, state, zip_code, rooms, lot_size, is_current)
         else:
-            insert_home(property_id, agent_id, address, city, state, zip_code, rooms, lot_size, is_current)
+            insert_home(property_id, agent_id, broker_id, address, city, state, zip_code, rooms, lot_size, is_current)
 
         return redirect(url_for("properties"))
 
@@ -53,7 +55,7 @@ def properties():
         for row in list_agents_brief()
     ]
 
-    return render_template("properties.html", homes=homes, agents=agents)
+    return render_template("properties.html", homes=homes, agents=agents, brokers=list_brokers())
 
 
 @app.route("/address_suggestions")

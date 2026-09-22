@@ -60,10 +60,10 @@ def insert_signin(data):
     conn = get_conn()
     conn.execute("""
         INSERT INTO signins (
-            first_name, last_name, email, phone, alternate_phone, visitor_type, currently, property_type, bedrooms, preferred_areas, working_with_broker,
+            first_name, last_name, email, phone, alternate_phone, best_time_to_contact, visitor_type, currently, property_type, bedrooms, preferred_areas, working_with_broker,
             zip_code, heard_about_us, timeline, preapproval, notes, agent_id, open_house_id,
             motivation_score, followup_message, next_steps_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, data)
     conn.commit()
     conn.close()
@@ -110,7 +110,7 @@ def insert_contact(data):
             visitor_type, currently, property_type, bedrooms, preferred_areas, working_with_broker,
             zip_code, heard_about_us, is_contact, timeline, preapproval, notes,
             motivation_score, followup_message, next_steps_json, agent_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)
     """, data)
     conn.commit()
     conn.close()
@@ -126,7 +126,9 @@ def soft_delete_contact(signin_id):
 def list_contacts():
     conn = get_conn()
     rows = conn.execute("""
-         SELECT signins.id, signins.first_name, signins.last_name, signins.email, signins.phone, signins.alternate_phone, signins.visitor_type, signins.currently,
+         SELECT signins.id, signins.first_name, signins.last_name, signins.email, signins.phone, signins.alternate_phone,
+             signins.preferred_contact_method, signins.best_time_to_contact, signins.lead_status,
+             signins.visitor_type, signins.currently,
              signins.property_type, signins.bedrooms, signins.preferred_areas,
              signins.working_with_broker, signins.zip_code, signins.heard_about_us, signins.timeline,
              signins.preapproval, signins.notes, signins.motivation_score, signins.followup_message,
@@ -144,7 +146,7 @@ def list_contacts():
 def list_dashboard_signins():
     conn = get_conn()
     rows = conn.execute("""
-         SELECT signins.id, signins.first_name, signins.last_name, signins.email, signins.phone, signins.alternate_phone, signins.visitor_type, signins.currently,
+         SELECT signins.id, signins.first_name, signins.last_name, signins.email, signins.phone, signins.alternate_phone, signins.best_time_to_contact, signins.visitor_type, signins.currently,
              signins.property_type, signins.bedrooms, signins.preferred_areas,
              signins.working_with_broker, signins.zip_code, signins.heard_about_us, signins.is_contact, signins.dashboard_hidden, signins.timeline,
              signins.preapproval, signins.notes, signins.motivation_score, signins.followup_message,
@@ -162,7 +164,8 @@ def list_dashboard_signins():
                 LIMIT 1
             )
         )
-         WHERE signins.dashboard_hidden = 0
+                 WHERE signins.dashboard_hidden = 0
+                     AND (signins.preferred_contact_method IS NULL OR signins.preferred_contact_method = '')
         ORDER BY signins.motivation_score DESC, signins.created_at DESC
     """).fetchall()
     conn.close()
@@ -174,6 +177,7 @@ def get_contact(signin_id):
     row = conn.execute("""
         SELECT id, first_name, last_name, email, phone, alternate_phone, preferred_contact_method, best_time_to_contact, lead_status,
                visitor_type, currently, property_type, bedrooms, preferred_areas,
+               working_with_broker, zip_code, heard_about_us,
                timeline, preapproval, notes, agent_id
         FROM signins
         WHERE id = ?
@@ -188,7 +192,9 @@ def update_contact(signin_id, data):
         UPDATE signins
         SET first_name = ?, last_name = ?, email = ?, phone = ?, alternate_phone = ?,
             preferred_contact_method = ?, best_time_to_contact = ?, lead_status = ?, visitor_type = ?, currently = ?,
-            property_type = ?, bedrooms = ?, preferred_areas = ?, timeline = ?, preapproval = ?, notes = ?, motivation_score = ?,
+            property_type = ?, bedrooms = ?, preferred_areas = ?,
+            working_with_broker = ?, zip_code = ?, heard_about_us = ?,
+            timeline = ?, preapproval = ?, notes = ?, motivation_score = ?,
             followup_message = ?, next_steps_json = ?, agent_id = ?
         WHERE id = ?
     """, (*data, signin_id))

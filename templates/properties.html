@@ -1,260 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Properties</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Properties | Lead Workspace</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fff; --line: #d9e1ea; --blue: #2563c7; --blue-dark: #194c9d; --red: #c82333; }
+        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; --gold: #ffb547; --red: #c82333; }
         * { box-sizing: border-box; }
-        body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
-        .page { max-width: 1440px; margin: 0 auto; }
-        .shortcut-bar { display: flex; gap: 9px; margin-bottom: 30px; }
-        .shortcut-bar a { padding: 9px 13px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.7); color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; }
-        .shortcut-bar a:hover { border-color: var(--blue); color: var(--blue); }
-        .page-heading { margin-bottom: 26px; }
-        .eyebrow { margin: 0 0 7px; color: var(--blue); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
-        h1 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; font-size: clamp(30px, 4vw, 44px); letter-spacing: -.04em; }
-        .subtitle { margin: 8px 0 0; color: var(--muted); }
-        .workspace { display: grid; grid-template-columns: minmax(300px, 390px) minmax(0, 1fr); gap: 22px; align-items: start; }
-        .panel { padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: 0 12px 30px rgba(23,32,51,.08); }
-        .panel h2 { margin: 0 0 18px; font-family: "Space Grotesk", Arial, sans-serif; font-size: 20px; }
-        .address-search { position: relative; margin-bottom: 18px; }
-        label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: .03em; }
-        input { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; }
-        select { width: 100%; min-height: 40px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; }
-        input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
-        select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
-        .address-search input { width: 100%; }
-        .suggestions { position: absolute; z-index: 2; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: white; box-shadow: 0 8px 20px rgba(23,32,51,.14); }
-        .suggestion { display: block; width: 100%; padding: 11px 12px; border: 0; border-bottom: 1px solid #edf1f4; border-radius: 0; background: white; color: var(--ink); font: inherit; text-align: left; }
-        .suggestion:hover { background: #eef5ff; color: var(--blue-dark); cursor: pointer; }
-        .suggestion small { display: block; margin-top: 3px; color: var(--muted); }
-        .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
-        button { min-height: 40px; padding: 9px 12px; border: 0; border-radius: 8px; background: var(--blue); color: white; font: inherit; font-weight: 800; cursor: pointer; }
-        button:hover { background: var(--blue-dark); }
-        .delete-button { grid-column: 1 / -1; background: var(--red); }
-        .delete-button:hover { background: #a51d2b; }
-        .table-panel { min-width: 0; overflow: hidden; }
-        .table-wrap { overflow-x: auto; }
-        table { width: 100%; min-width: 760px; border-collapse: collapse; }
-        th, td { padding: 13px 12px; border: 1px solid var(--line); text-align: left; }
-        th { background: #edf3f8; color: #40536b; font-size: 11px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
-        td { color: #26384c; font-size: 13px; font-weight: 500; }
-        .home-row { cursor: pointer; }
-        .home-row:hover { background: #f3f8ff; }
-        .selected-home { background: #dbeafe; outline: 2px solid #8bb7ee; outline-offset: -2px; }
-        @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } }
-        @media (max-width: 520px) { body { padding: 20px 12px; } .panel { padding: 17px; } .form-actions { grid-template-columns: 1fr; } .delete-button { grid-column: auto; } }
+        body { min-height: 100vh; margin: 0; color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+        .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100vh; padding: 28px 18px; background: #172033; color: #fff; }
+        .brand { padding: 0 14px 30px; border-bottom: 1px solid rgba(255,255,255,.12); } .brand-mark { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 14px; border-radius: 12px; background: var(--gold); color: var(--ink); font-size: 15px; font-weight: 800; }
+        .brand strong, .brand small { display: block; } .brand strong { font-size: 20px; } .brand small { margin-top: 5px; color: #aeb9ca; font-size: 12px; }
+        .sidebar-nav { display: grid; gap: 9px; margin-top: 28px; } .sidebar-nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; letter-spacing: .02em; }
+        .sidebar-nav a::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: var(--ink); font-size: 13px; font-weight: 800; } .nav-dashboard::before { content: "D"; background: #ffb547; } .nav-contacts::before { content: "C"; background: #f28f8f; } .nav-tasks::before { content: "T"; background: #c1ccd9; } .nav-properties::before { content: "P"; background: #6ed3cf; } .nav-agents::before { content: "A"; background: #f6c177; } .nav-brokers::before { content: "B"; background: #b7e4c7; } .nav-open-house::before { content: "O"; background: #b7e4c7; } .nav-signins::before { content: "S"; background: #9ca7ff; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255,255,255,.1); color: #fff; transform: translateX(3px); } .sidebar-nav a.active { border-left-color: var(--gold); } .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
+        .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); } .page { max-width: 1480px; margin: 0 auto; } .topbar { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+        .eyebrow { margin: 0 0 7px; color: #d9922e; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; } h1, h2 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; letter-spacing: -.03em; } h1 { font-size: clamp(30px, 4vw, 46px); } h2 { font-size: 21px; } .subtitle, .panel-intro { margin: 8px 0 0; color: var(--muted); } .panel-intro { font-size: 13px; }
+        .button, button { min-height: 40px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; } .button:hover, button:hover { filter: brightness(.92); } .button.secondary { background: var(--ink); } .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
+        .workspace { display: grid; grid-template-columns: minmax(310px, 420px) minmax(0, 1fr); gap: 22px; align-items: start; } .panel { min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); } .panel-header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 20px; } .count { color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; } .field { min-width: 0; } .wide { grid-column: 1 / -1; } label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; } input, select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; } input:focus, select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .address-search { position: relative; } .suggestions { position: absolute; z-index: 2; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; box-shadow: 0 8px 20px rgba(23,32,51,.14); } .suggestion { display: block; width: 100%; padding: 11px 12px; border: 0; border-bottom: 1px solid #edf1f4; border-radius: 0; background: #fff; color: var(--ink); font: inherit; text-align: left; } .suggestion:hover { background: #eef5ff; color: #194c9d; } .suggestion small { display: block; margin-top: 3px; color: var(--muted); }
+        .checkbox-field { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: #f8fbff; } .checkbox-field input { width: 18px; min-height: 18px; margin: 0; accent-color: var(--blue); } .checkbox-field label { margin: 0; font-size: 12px; }
+        .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; } .delete-button { grid-column: 1 / -1; background: #fff0f1; color: var(--red); } button:disabled { background: #a9b4c3; cursor: not-allowed; }
+        .property-list { display: grid; gap: 10px; } .property-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 16px; border: 1px solid var(--line); border-left: 4px solid #6ed3cf; border-radius: 11px; background: var(--paper); cursor: pointer; } .property-card:hover, .property-card.selected-home { border-color: #9ebce7; background: #f4f8ff; } .property-address { font-size: 16px; font-weight: 800; } .property-location { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+        .property-details { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 8px 16px; margin-top: 12px; } .detail { min-width: 0; } .detail-label { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; } .detail-value { overflow-wrap: anywhere; color: var(--ink); font-size: 12px; font-weight: 600; } .badge { align-self: start; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; } .current-badge { background: #e8f7f1; color: #287d68; } .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
+        @media (max-width: 980px) { .workspace { grid-template-columns: 1fr; } } @media (max-width: 768px) { .app-shell { display: block; } .sidebar { position: relative; min-height: auto; padding: 18px; } .brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; } .brand-mark { margin: 0; } .brand small { margin-top: 2px; } .sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; } .sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; } .sidebar-nav a.active { border-bottom-color: var(--gold); } .sidebar-footer { display: none; } .content-shell { padding: 28px 16px; } } @media (max-width: 520px) { .topbar { align-items: start; flex-direction: column; } .form-grid, .property-details, .form-actions { grid-template-columns: 1fr; } .wide, .delete-button { grid-column: auto; } .panel { padding: 18px; } }
     </style>
 </head>
-
 <body>
-<main class="page">
-
-<nav class="shortcut-bar" aria-label="Page navigation">
-    <a href="{{ url_for('signin') }}"><strong>F1</strong> Sign In</a>
-    <a href="{{ url_for('dashboard') }}"><strong>F2</strong> Dashboard</a>
-</nav>
-
-<header class="page-heading">
-    <p class="eyebrow">Listing workspace</p>
-    <h1>Properties</h1>
-    <p class="subtitle">Manage the homes connected to your open house workflow.</p>
-</header>
-
-<div class="workspace">
-<section class="panel">
-<h2>Add or update a home</h2>
-<div class="address-search">
-    <label for="address-search-input"><strong>Search public addresses</strong></label><br>
-    <input id="address-search-input" type="search" placeholder="Start typing an address..." autocomplete="off">
-    <div id="address-suggestions" class="suggestions" hidden></div>
+<div class="app-shell">
+    <aside class="sidebar"><div class="brand"><span class="brand-mark">FH</span><div><strong>The Best Of Florida Homes</strong><small>Lead workspace</small></div></div><nav class="sidebar-nav" aria-label="Main navigation"><a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a><a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a><a class="nav-tasks" href="{{ url_for('tasks') }}">Tasks</a><a class="active nav-properties" href="{{ url_for('properties') }}">Properties</a><a class="nav-agents" href="{{ url_for('agents') }}">Agents</a><a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a><a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a><a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a><a href="{{ url_for('export_csv') }}">Export CSV</a><a href="{{ url_for('logout') }}">Log Out</a></nav><div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div></aside>
+    <main class="content-shell"><div class="page">
+        <header class="topbar"><div><p class="eyebrow">Listing workspace</p><h1>Properties</h1><p class="subtitle">Manage the homes connected to your open house workflow.</p></div><div><a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a><button class="button ghost" type="button" id="new-home-button">New property</button></div></header>
+        <div class="workspace">
+            <section class="panel"><div class="panel-header"><div><h2 id="form-title">Add a property</h2><p class="panel-intro">Search a public address or enter the property details below.</p></div></div>
+                <div class="address-search"><label for="address-search-input">Search public addresses</label><input id="address-search-input" type="search" placeholder="Start typing an address..." autocomplete="off"><div id="address-suggestions" class="suggestions" hidden></div></div>
+                <form method="post" id="home-form"><input type="hidden" name="home_id" id="home-id"><div class="form-grid"><div class="field"><label for="property-id">Property ID</label><input id="property-id" name="property_id"></div><div class="field"><label for="agent-id">Assigned Agent</label><select id="agent-id" name="agent_id"><option value="">Select an agent</option>{% for agent in agents %}<option value="{{ agent.id }}">{{ agent.first_name }}{% if agent.middle_name %} {{ agent.middle_name }}{% endif %} {{ agent.last_name }}</option>{% endfor %}</select></div><div class="field wide"><label for="address">Address</label><input id="address" name="address"></div><div class="field"><label for="city">City</label><input id="city" name="city"></div><div class="field"><label for="state">State</label><input id="state" name="state"></div><div class="field"><label for="zip-code">Zip Code</label><input id="zip-code" name="zip_code"></div><div class="field"><label for="rooms">Rooms</label><input id="rooms" name="rooms" placeholder="3 bed, 2 bath"></div><div class="field"><label for="lot-size">Lot Size</label><input id="lot-size" name="lot_size" placeholder="0.25 acres"></div></div><div class="checkbox-field"><input id="is-current" type="checkbox" name="is_current"><label for="is-current">Set as current home</label></div><div class="form-actions"><button id="add-home-button" type="submit" name="action" value="add">Add Property</button><button type="submit" name="action" value="update">Update Property</button><button type="submit" name="action" value="delete" class="delete-button" onclick="return confirm('Delete this property?');">Delete Property</button></div></form>
+            </section>
+            <section class="panel"><div class="panel-header"><div><h2>Saved properties</h2><p class="panel-intro">Select a property to load its current table values into the form.</p></div><span class="count">{{ homes|length }} propert{% if homes|length == 1 %}y{% else %}ies{% endif %}</span></div>{% if homes %}<div class="property-list">{% for h in homes %}<article class="property-card" data-home-id="{{ h[0] }}" data-property-id="{{ h[1] or '' }}" data-agent-id="{{ h[2] or '' }}" data-address="{{ h[3]|e }}" data-city="{{ h[4]|e }}" data-state="{{ h[5]|e }}" data-zip-code="{{ h[6]|e }}" data-rooms="{{ h[7]|e }}" data-lot-size="{{ h[8]|e }}" data-current="{{ h[9] }}"><div><div class="property-address">{{ h[3] or "Address not set" }}</div><div class="property-location">{{ h[4] or "City not set" }}{% if h[5] %}, {{ h[5] }}{% endif %}{% if h[6] %} {{ h[6] }}{% endif %}</div><div class="property-details"><div class="detail"><span class="detail-label">Property ID</span><span class="detail-value">{{ h[1] or "Not set" }}</span></div><div class="detail"><span class="detail-label">Agent</span><span class="detail-value">{% for agent in agents if agent.id == h[2] %}{{ agent.first_name }}{% if agent.middle_name %} {{ agent.middle_name }}{% endif %} {{ agent.last_name }}{% else %}Unassigned{% endfor %}</span></div><div class="detail"><span class="detail-label">Rooms</span><span class="detail-value">{{ h[7] or "Not set" }}</span></div><div class="detail"><span class="detail-label">Lot Size</span><span class="detail-value">{{ h[8] or "Not set" }}</span></div></div></div>{% if h[9] == 1 %}<span class="badge current-badge">Current</span>{% else %}<span class="badge">Property</span>{% endif %}</article>{% endfor %}</div>{% else %}<div class="empty-state">No properties have been added yet.</div>{% endif %}</section>
+        </div>
+    </div></main>
 </div>
-
-<form method="POST">
-    <input type="hidden" name="home_id" id="home-id">
-    <label>Property ID</label><br>
-    <input type="text" name="property_id"><br>
-
-    <label for="agent-id">Agent</label><br>
-    <select id="agent-id" name="agent_id">
-        <option value="">Select an agent</option>
-        {% for agent in agents %}
-        {% set agent_id_value = agent.id if agent.id is defined else agent[0] %}
-        {% set agent_first_name = agent.first_name if agent.first_name is defined else agent[1] %}
-        {% set agent_middle_name = agent.middle_name if agent.middle_name is defined else agent[2] %}
-        {% set agent_last_name = agent.last_name if agent.last_name is defined else agent[3] %}
-        <option value="{{ agent_id_value }}">{{ agent_first_name }}{% if agent_middle_name %} {{ agent_middle_name }}{% endif %} {{ agent_last_name }}</option>
-        {% endfor %}
-    </select><br>
-
-    <label for="address">Address</label><br>
-    <input id="address" type="text" name="address"><br>
-
-    <label>City</label><br>
-    <input type="text" name="city"><br>
-
-    <label>State</label><br>
-    <input type="text" name="state"><br>
-
-    <label>Zip Code</label><br>
-    <input type="text" name="zip_code"><br>
-
-    <label>Rooms</label><br>
-    <input type="text" name="rooms" placeholder="Example: 3 bed, 2 bath"><br>
-
-    <label>Lot Size</label><br>
-    <input type="text" name="lot_size" placeholder="Example: 0.25 acres"><br>
-
-    <label>
-        <input type="checkbox" name="is_current">
-        Set as Current Home
-    </label><br><br>
-
-    <div class="form-actions">
-        <button id="add-home-button" type="submit" name="action" value="add">Add Home</button>
-        <button type="submit" name="action" value="update">Update Home</button>
-        <button type="submit" name="action" value="delete" class="delete-button" onclick="return confirm('Delete this home?');">Delete Home</button>
-    </div>
-</form>
-</section>
-
 <script>
+    const homeForm = document.getElementById("home-form");
+    const homeId = document.getElementById("home-id");
+    const addHomeButton = document.getElementById("add-home-button");
+    const newHomeButton = document.getElementById("new-home-button");
+    const formTitle = document.getElementById("form-title");
     const addressInput = document.getElementById("address-search-input");
     const addressField = document.getElementById("address");
     const suggestionList = document.getElementById("address-suggestions");
-    const homeFields = {
-        property_id: document.querySelector('input[name="property_id"]'),
-        address: addressField,
-        city: document.querySelector('input[name="city"]'),
-        state: document.querySelector('input[name="state"]'),
-        zip_code: document.querySelector('input[name="zip_code"]'),
-        rooms: document.querySelector('input[name="rooms"]'),
-        lot_size: document.querySelector('input[name="lot_size"]')
-    };
-    let searchTimer;
-    let searchSequence = 0;
-
-    addressInput.addEventListener("input", () => {
-        clearTimeout(searchTimer);
-        const query = addressInput.value.trim();
-        suggestionList.hidden = true;
-        suggestionList.replaceChildren();
-        if (query.length < 3) return;
-
-        const sequence = ++searchSequence;
-        searchTimer = setTimeout(async () => {
-            try {
-                const response = await fetch(`/address_suggestions?q=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                if (sequence !== searchSequence) return;
-
-                data.results.forEach((result) => {
-                    const option = document.createElement("button");
-                    option.type = "button";
-                    option.className = "suggestion";
-                    const address = document.createElement("span");
-                    address.textContent = result.address || result.display_name;
-                    const details = document.createElement("small");
-                    details.textContent = `${result.city}, ${result.state} ${result.zip_code}`;
-                    option.append(address, details);
-                    option.addEventListener("click", () => {
-                        Object.entries(homeFields).forEach(([name, field]) => {
-                            field.value = result[name] || "";
-                        });
-                        suggestionList.hidden = true;
-                    });
-                    suggestionList.appendChild(option);
-                });
-                suggestionList.hidden = data.results.length === 0;
-            } catch (error) {
-                suggestionList.hidden = true;
-            }
-        }, 300);
-    });
-
-    document.addEventListener("click", (event) => {
-        if (!event.target.closest(".address-search")) suggestionList.hidden = true;
-    });
+    const homeFields = { property_id: document.getElementById("property-id"), address: addressField, city: document.getElementById("city"), state: document.getElementById("state"), zip_code: document.getElementById("zip-code"), rooms: document.getElementById("rooms"), lot_size: document.getElementById("lot-size") };
+    let searchTimer; let searchSequence = 0;
+    function resetHomeForm() { homeForm.reset(); homeId.value = ""; addressInput.value = ""; addHomeButton.disabled = false; formTitle.textContent = "Add a property"; document.querySelectorAll(".property-card").forEach((item) => item.classList.remove("selected-home")); document.getElementById("property-id").focus(); }
+    newHomeButton.addEventListener("click", resetHomeForm);
+    document.querySelectorAll(".property-card").forEach((card) => { card.addEventListener("click", () => { homeId.value = card.dataset.homeId; Object.entries(homeFields).forEach(([name, field]) => { field.value = card.getAttribute(`data-${name.replaceAll("_", "-")}`) || ""; }); homeForm.elements.agent_id.value = card.dataset.agentId; homeForm.elements.is_current.checked = card.dataset.current === "1"; addHomeButton.disabled = true; formTitle.textContent = "Update property"; document.querySelectorAll(".property-card").forEach((item) => item.classList.remove("selected-home")); card.classList.add("selected-home"); homeForm.scrollIntoView({ behavior: "smooth", block: "start" }); }); });
+    addressInput.addEventListener("input", () => { clearTimeout(searchTimer); const query = addressInput.value.trim(); suggestionList.hidden = true; suggestionList.replaceChildren(); if (query.length < 3) return; const sequence = ++searchSequence; searchTimer = setTimeout(async () => { try { const response = await fetch(`/address_suggestions?q=${encodeURIComponent(query)}`); const data = await response.json(); if (sequence !== searchSequence) return; data.results.forEach((result) => { const option = document.createElement("button"); option.type = "button"; option.className = "suggestion"; option.textContent = result.address || result.display_name; const details = document.createElement("small"); details.textContent = `${result.city}, ${result.state} ${result.zip_code}`; option.appendChild(details); option.addEventListener("click", () => { Object.entries(homeFields).forEach(([name, field]) => { field.value = result[name] || ""; }); suggestionList.hidden = true; }); suggestionList.appendChild(option); }); suggestionList.hidden = data.results.length === 0; } catch (error) { suggestionList.hidden = true; } }, 300); });
+    document.addEventListener("click", (event) => { if (!event.target.closest(".address-search")) suggestionList.hidden = true; });
+    document.addEventListener("keydown", (event) => { if (event.key === "F1") { event.preventDefault(); window.location.href = "/signin"; } else if (event.key === "F2") { event.preventDefault(); window.location.href = "/dashboard"; } });
 </script>
-
-<section class="panel table-panel">
-<h2>Saved properties</h2>
-<div class="table-wrap">
-
-<table>
-<thead>
-    <tr>
-        <th>ID</th>
-        <th>Property ID</th>
-        <th>Agent</th>
-        <th>Address</th>
-        <th>City</th>
-        <th>State</th>
-        <th>Zip</th>
-        <th>Rooms</th>
-        <th>Lot Size</th>
-        <th>Current</th>
-    </tr>
-</thead>
-<tbody>
-
-    {% for h in homes %}
-    <tr class="home-row" data-home-id="{{ h[0] }}" data-property-id="{{ h[1] }}" data-agent-id="{{ h[2] or '' }}" data-address="{{ h[3] }}" data-city="{{ h[4] }}" data-state="{{ h[5] }}" data-zip-code="{{ h[6] }}" data-rooms="{{ h[7] }}" data-lot-size="{{ h[8] }}" data-current="{{ h[9] }}">
-        <td>{{ h[0] }}</td>
-        <td>{{ h[1] }}</td>
-        <td>{% for agent in agents %}{% if (agent.id if agent.id is defined else agent[0]) == h[2] %}{{ agent.first_name if agent.first_name is defined else agent[1] }}{% set middle_name = agent.middle_name if agent.middle_name is defined else agent[2] %}{% if middle_name %} {{ middle_name }}{% endif %} {{ agent.last_name if agent.last_name is defined else agent[3] }}{% endif %}{% endfor %}</td>
-        <td>{{ h[3] }}</td>
-        <td>{{ h[4] }}</td>
-        <td>{{ h[5] }}</td>
-        <td>{{ h[6] }}</td>
-        <td>{{ h[7] }}</td>
-        <td>{% if h[9] == 1 %}✔{% endif %}</td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-</div>
-</section>
-</div>
-</main>
-
 <script>
-    const homeId = document.getElementById("home-id");
-    const addHomeButton = document.getElementById("add-home-button");
-    const homeForm = document.querySelector('form[method="POST"]');
-    const homeRows = document.querySelectorAll(".home-row");
-
-    homeRows.forEach((row) => {
-        row.addEventListener("click", () => {
-            homeId.value = row.dataset.homeId;
-            addHomeButton.disabled = true;
-            homeForm.elements.property_id.value = row.dataset.propertyId;
-            homeForm.elements.agent_id.value = row.dataset.agentId;
-            homeForm.elements.address.value = row.dataset.address;
-            homeForm.elements.city.value = row.dataset.city;
-            homeForm.elements.state.value = row.dataset.state;
-            homeForm.elements.zip_code.value = row.dataset.zipCode;
-            homeForm.elements.rooms.value = row.dataset.rooms;
-            homeForm.elements.lot_size.value = row.dataset.lotSize;
-            homeForm.elements.is_current.checked = row.dataset.current === "1";
-            homeRows.forEach((item) => item.classList.remove("selected-home"));
-            row.classList.add("selected-home");
+    const brokerRecords = {
+        {% for broker in brokers %}
+        "{{ broker.id }}": { firstName: {{ (broker.first_name or "")|tojson }}, lastName: {{ (broker.last_name or "")|tojson }} }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    };
+    const propertyBrokerIds = [{% for home in homes %}{{ home[10] if home[10] else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}];
+    document.getElementById("agent-id").closest(".field").insertAdjacentHTML("afterend", `
+        <div class="field"><label for="broker-id">Broker</label><select id="broker-id" name="broker_id"><option value="">Select a broker</option>{% for broker in brokers %}<option value="{{ broker.id }}">{{ broker.company_name|e }}</option>{% endfor %}</select></div>
+    `);
+    const brokerSelect = document.getElementById("broker-id");
+    document.querySelectorAll(".property-card").forEach((card, index) => {
+        card.dataset.brokerId = propertyBrokerIds[index] || "";
+        card.addEventListener("click", () => {
+            brokerSelect.value = card.dataset.brokerId;
         });
     });
 </script>
-
-<script>
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "F1") {
-            event.preventDefault();
-            window.location.href = "/signin";
-        } else if (event.key === "F2") {
-            event.preventDefault();
-            window.location.href = "/dashboard";
-        }
-    });
-</script>
-
 </body>
 </html>

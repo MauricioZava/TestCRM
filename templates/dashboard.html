@@ -531,6 +531,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
 .nav-contacts::before { content: "C"; background: #f28f8f; }
 .nav-properties::before { content: "P"; background: #6ed3cf; }
 .nav-agents::before { content: "A"; background: #f6c177; }
+.nav-brokers::before { content: "B"; background: #b7e4c7; }
 .nav-open-house::before { content: "O"; background: #b7e4c7; }
 .nav-signins::before { content: "S"; background: #9ca7ff; }
 .nav-analytics::before { content: "A"; background: #c1ccd9; }
@@ -637,6 +638,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
             <a class="nav-analytics" href="{{ url_for('tasks') }}">Tasks</a>
             <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
             <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
+            <a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
             <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
             <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
             <a href="{{ url_for('export_csv') }}">Export CSV</a>
@@ -710,6 +712,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
 
 
 <section id="contacts">
+{% if signins %}
 {% for s in signins %}
 <div class="card {% if s.motivation_score >= 80 %}motivation-high{% elif s.motivation_score >= 60 %}motivation-medium{% elif s.motivation_score >= 40 %}motivation-low{% else %}motivation-critical{% endif %}">
 
@@ -734,6 +737,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
             <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value" title="{{ s.email }}">{{ s.email }}</span></div>
             <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ s.phone or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Alt. Phone</span><span class="detail-value">{{ s.alternate_phone or "Not provided" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Best Time</span><span class="detail-value">{{ s.best_time_to_contact or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Hosted by</span><span class="detail-value">{{ s.agent_name or "Not assigned" }}</span></div>
             <div class="detail-item"><span class="detail-label">Property Type</span><span class="detail-value">{{ s.property_type or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Bedrooms</span><span class="detail-value">{{ s.bedrooms or "Not provided" }}</span></div>
@@ -780,6 +784,13 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
 
 </div>
 {% endfor %}
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <p>No sign-in contacts yet.</p>
+    </div>
+</div>
+{% endif %}
 </section>
 
     </main>

@@ -120,6 +120,24 @@
                 </div>
             </div>
 
+            <div class="row-3">
+                <div>
+                    <label for="working_with_broker">Working With Broker</label>
+                    <select id="working_with_broker" name="working_with_broker">
+                        <option value="yes" {% if contact.working_with_broker == "yes" %}selected{% endif %}>Yes</option>
+                        <option value="no" {% if contact.working_with_broker != "yes" %}selected{% endif %}>No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="zip_code">Zip Code</label>
+                    <input id="zip_code" type="text" name="zip_code" value="{{ contact.zip_code }}" maxlength="12" placeholder="e.g. 33101">
+                </div>
+                <div>
+                    <label for="heard_about_us">How They Heard About You</label>
+                    <input id="heard_about_us" type="text" name="heard_about_us" value="{{ contact.heard_about_us }}" placeholder="Referral, social media, sign, etc.">
+                </div>
+            </div>
+
             <label for="agent-id">Hosted By</label>
             <select id="agent-id" name="agent_id">
                 <option value="">Unassigned</option>

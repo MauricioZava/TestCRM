@@ -67,9 +67,9 @@ def init_homes_table():
         )
     """)
     existing_columns = {row[1] for row in c.execute("PRAGMA table_info(homes)").fetchall()}
-    for column in ("rooms", "lot_size", "agent_id"):
+    for column in ("rooms", "lot_size", "agent_id", "broker_id"):
         if column not in existing_columns:
-            column_type = "INTEGER" if column == "agent_id" else "TEXT"
+            column_type = "INTEGER" if column in ("agent_id", "broker_id") else "TEXT"
             c.execute(f"ALTER TABLE homes ADD COLUMN {column} {column_type}")
     conn.commit()
     conn.close()
@@ -98,6 +98,42 @@ def init_agents_table():
             notes TEXT
         )
     """)
+    existing_columns = {row[1] for row in c.execute("PRAGMA table_info(agents)").fetchall()}
+    agent_columns = (
+        "middle_name", "email", "phone", "brokerage", "license_number",
+        "license_state", "office_address", "city", "state", "zip_code",
+        "website", "specialties", "notes"
+    )
+    for column in agent_columns:
+        if column not in existing_columns:
+            c.execute(f"ALTER TABLE agents ADD COLUMN {column} TEXT")
+    conn.commit()
+    conn.close()
+
+
+def init_brokers_table():
+    conn = get_conn()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS brokers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_name TEXT NOT NULL,
+            first_name TEXT,
+            last_name TEXT,
+            contact_name TEXT,
+            email TEXT,
+            phone TEXT,
+            office_address TEXT,
+            city TEXT,
+            state TEXT,
+            zip_code TEXT,
+            website TEXT,
+            notes TEXT
+        )
+    """)
+    existing_columns = {row[1] for row in conn.execute("PRAGMA table_info(brokers)").fetchall()}
+    for column in ("first_name", "last_name"):
+        if column not in existing_columns:
+            conn.execute(f"ALTER TABLE brokers ADD COLUMN {column} TEXT")
     conn.commit()
     conn.close()
 
@@ -153,6 +189,15 @@ def init_open_houses_table():
             FOREIGN KEY (agent_id) REFERENCES agents (id)
         )
     """)
+    existing_columns = {row[1] for row in c.execute("PRAGMA table_info(open_houses)").fetchall()}
+    open_house_columns = (
+        "title", "status", "visitor_capacity", "rsvp_contact",
+        "public_notes", "internal_notes"
+    )
+    for column in open_house_columns:
+        if column not in existing_columns:
+            column_type = "TEXT NOT NULL DEFAULT 'Scheduled'" if column == "status" else "TEXT"
+            c.execute(f"ALTER TABLE open_houses ADD COLUMN {column} {column_type}")
     conn.commit()
     conn.close()
 
@@ -185,6 +230,7 @@ def init_all():
     init_db()
     init_homes_table()
     init_agents_table()
+    init_brokers_table()
     init_open_houses_table()
     backfill_signin_open_houses()
     init_tasks_table()

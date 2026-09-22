@@ -72,6 +72,9 @@ Warm regards,"""
             "property_type": "single-family",
             "bedrooms": "",
             "preferred_areas": "",
+            "working_with_broker": "no",
+            "zip_code": "",
+            "heard_about_us": "",
             "timeline": "browsing",
             "preapproval": "unknown",
             "notes": thank_you_message,
@@ -132,22 +135,25 @@ def contacts():
             "email": row[3],
             "phone": row[4],
             "alternate_phone": row[5],
-            "visitor_type": row[6],
-            "currently": row[7],
-            "property_type": row[8],
-            "bedrooms": row[9],
-            "preferred_areas": row[10],
-            "working_with_broker": row[11],
-            "zip_code": row[12],
-            "heard_about_us": row[13],
-            "timeline": row[14],
-            "preapproval": row[15],
-            "notes": row[16],
-            "motivation_score": row[17],
-            "followup_message": row[18],
-            "next_steps": json.loads(row[19] or "[]"),
-            "created_at": row[20],
-            "agent_name": " ".join(part for part in row[21:24] if part) or None,
+            "preferred_contact_method": row[6],
+            "best_time_to_contact": row[7],
+            "lead_status": row[8],
+            "visitor_type": row[9],
+            "currently": row[10],
+            "property_type": row[11],
+            "bedrooms": row[12],
+            "preferred_areas": row[13],
+            "working_with_broker": row[14],
+            "zip_code": row[15],
+            "heard_about_us": row[16],
+            "timeline": row[17],
+            "preapproval": row[18],
+            "notes": row[19],
+            "motivation_score": row[20],
+            "followup_message": row[21],
+            "next_steps": json.loads(row[22] or "[]"),
+            "created_at": row[23],
+            "agent_name": " ".join(part for part in row[24:27] if part) or None,
         }
         for row in rows
     ]
@@ -172,6 +178,9 @@ def edit_contact(signin_id):
         property_type = request.form.get("property_type", "").strip()
         bedrooms = request.form.get("bedrooms", "").strip()
         preferred_areas = request.form.get("preferred_areas", "").strip()
+        working_with_broker = "yes" if request.form.get("working_with_broker") == "yes" else "no"
+        zip_code = request.form.get("zip_code", "").strip()
+        heard_about_us = request.form.get("heard_about_us", "").strip()
         timeline = request.form.get("timeline", "").strip()
         preapproval = request.form.get("preapproval", "").strip()
         notes = request.form.get("notes", "").strip()
@@ -182,7 +191,9 @@ def edit_contact(signin_id):
         )
         update_contact(signin_id, (
             first_name, last_name, email, phone, alternate_phone, preferred_contact_method, best_time_to_contact, lead_status,
-            visitor_type, currently, property_type, bedrooms, preferred_areas, timeline, preapproval,
+            visitor_type, currently, property_type, bedrooms, preferred_areas,
+            working_with_broker, zip_code, heard_about_us,
+            timeline, preapproval,
             notes, motivation_score, followup_message, next_steps_json, agent_id
         ))
         return redirect(url_for("contacts"))
@@ -206,10 +217,13 @@ def edit_contact(signin_id):
         "property_type": row[11] or "",
         "bedrooms": row[12] or "",
         "preferred_areas": row[13] or "",
-        "timeline": row[14],
-        "preapproval": row[15],
-        "notes": row[16],
-        "agent_id": row[17],
+        "working_with_broker": row[14] or "no",
+        "zip_code": row[15] or "",
+        "heard_about_us": row[16] or "",
+        "timeline": row[17],
+        "preapproval": row[18],
+        "notes": row[19],
+        "agent_id": row[20],
     }
     return render_template("edit_contact.html", contact=contact, is_new=False, agents=list_agents_brief())
 

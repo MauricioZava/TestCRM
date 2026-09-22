@@ -20,6 +20,7 @@ def signin():
         email = request.form.get("email", "").strip()
         phone = request.form.get("phone", "").strip()
         alternate_phone = request.form.get("alternate_phone", "").strip()
+        best_time_to_contact = request.form.get("best_time_to_contact", "").strip()
         visitor_type = request.form.get("visitor_type", "").strip()
         currently = request.form.get("currently", "").strip()
         property_type = request.form.get("property_type", "").strip()
@@ -55,7 +56,7 @@ def signin():
         agent_id = agent_id or submitted_agent_id
 
         insert_signin((
-            first_name, last_name, email, phone, alternate_phone, visitor_type, currently, property_type, bedrooms, preferred_areas, working_with_broker,
+            first_name, last_name, email, phone, alternate_phone, best_time_to_contact, visitor_type, currently, property_type, bedrooms, preferred_areas, working_with_broker,
             zip_code, heard_about_us, timeline, preapproval, notes, agent_id, open_house_id,
             motivation_score, followup_message, next_steps_json
         ))

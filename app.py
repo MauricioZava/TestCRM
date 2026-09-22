@@ -54,7 +54,7 @@ def set_security_headers(response):
 
 
 # Import routes so their view functions register on the shared app instance.
-from routes import auth, main, agents, properties, open_houses, signin, contacts, tasks  # noqa: E402,F401
+from routes import auth, main, agents, brokers, properties, open_houses, signin, contacts, tasks  # noqa: E402,F401
 
 if __name__ == "__main__":
     init_all()

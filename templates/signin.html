@@ -89,7 +89,7 @@
         }
 
         h1 {
-            margin: 4px 0 7px;
+            margin: 4px 0 18px;
             color: var(--ink);
             font-family: "Space Grotesk", sans-serif;
             font-size: 21px;
@@ -118,8 +118,6 @@
 
         .form-heading {
             margin: 0 0 2px;
-            padding-top: 14px;
-            border-top: 1px solid var(--line);
             color: var(--ink);
             font-family: "Space Grotesk", sans-serif;
             font-size: 16px;
@@ -159,6 +157,36 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
+        }
+
+        .row-email-zip {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+            gap: 12px;
+        }
+
+        .field-group {
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--soft);
+        }
+
+        .field-group > .row:first-of-type,
+        .field-group > label:first-of-type {
+            margin-top: 0;
+        }
+
+        .group-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .group-row .field-group {
+            margin-top: 0;
         }
 
         .checkbox-field {
@@ -206,6 +234,9 @@
             body { padding: 8px; place-items: start center; }
             .container { max-height: calc(100vh - 16px); padding: 22px 16px; }
             .row { grid-template-columns: 1fr; gap: 0; }
+            .row-email-zip { grid-template-columns: 1fr; gap: 0; }
+            .group-row { grid-template-columns: 1fr; gap: 0; }
+            .group-row .field-group { margin-top: 12px; }
         }
     </style>
     <script>
@@ -229,33 +260,51 @@
         {% endif %}
 
         <h1>Open House Sign-In</h1>
-        <p class="intro">Tell us a little about your plans, and we will follow up with the details that matter to you.</p>
 
         <form method="post">
             {% if open_house %}
             <input type="hidden" name="agent_id" value="{{ open_house.agent_id }}">
             <input type="hidden" name="open_house_id" value="{{ open_house.id }}">
             {% endif %}
-            <div class="eyebrow">Guest details</div>
-            <h2 class="form-heading">Tell us about yourself</h2>
+            <h2 class="form-heading">Contact Info</h2>
 
-            <label>First Name</label>
-            <input type="text" name="first_name" required>
+            <div class="field-group">
+                <div class="row">
+                    <div>
+                        <label>First Name</label>
+                        <input type="text" name="first_name" required>
+                    </div>
+                    <div>
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" required>
+                    </div>
+                </div>
 
-            <label>Last Name</label>
-            <input type="text" name="last_name" required>
+                <div class="row-email-zip">
+                    <div>
+                        <label>Email</label>
+                        <input type="email" name="email" required>
+                    </div>
+                    <div>
+                        <label>Zip Code</label>
+                        <input type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" maxlength="10">
+                    </div>
+                </div>
 
-            <label>Email</label>
-            <input type="email" name="email" required>
+                <div class="row">
+                    <div>
+                        <label>Phone</label>
+                        <input type="text" name="phone">
+                    </div>
+                    <div>
+                        <label>Alternate Phone</label>
+                        <input type="text" name="alternate_phone">
+                    </div>
+                </div>
 
-            <label>Phone</label>
-            <input type="text" name="phone">
-
-            <label>Alternate Phone</label>
-            <input type="text" name="alternate_phone">
-
-            <label>Zip Code</label>
-            <input type="text" name="zip_code" inputmode="numeric" autocomplete="postal-code" maxlength="10">
+                <label>Best Time to Contact</label>
+                <input type="text" name="best_time_to_contact" placeholder="Example: Weekday evenings">
+            </div>
 
             <div class="row">
                 <div>
@@ -285,56 +334,67 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div>
-                    <label>Property Type</label>
-                    <select name="property_type">
-                        <option value="" selected disabled>Select property type</option>
-                        <option value="single-family">Single Family</option>
-                        <option value="condo">Condo</option>
-                        <option value="townhome">Townhome</option>
-                        <option value="multi-family">Multi-Family</option>
-                        <option value="land">Land</option>
-                        <option value="other">Other</option>
-                    </select>
+            <div class="group-row">
+                <div class="field-group">
+                    <div class="row">
+                        <div>
+                            <label>Property Type</label>
+                            <select name="property_type">
+                                <option value="" selected disabled>Select property type</option>
+                                <option value="single-family">Single Family</option>
+                                <option value="condo">Condo</option>
+                                <option value="townhome">Townhome</option>
+                                <option value="multi-family">Multi-Family</option>
+                                <option value="land">Land</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Bedrooms</label>
+                            <input type="text" name="bedrooms" placeholder="e.g. 3 or 3+" maxlength="10">
+                        </div>
+                    </div>
+
+                    <label>Preferred Areas</label>
+                    <input type="text" name="preferred_areas" placeholder="Neighborhoods or cities">
                 </div>
-                <div>
-                    <label>Bedrooms</label>
-                    <input type="text" name="bedrooms" placeholder="e.g. 3 or 3+" maxlength="10">
+
+                <div class="field-group">
+                    <label>How did you hear about us?</label>
+                    <select name="heard_about_us" required>
+                        <option value="" selected disabled>Select an option</option>
+                        <option value="zillow">Zillow</option>
+                        <option value="yard-sign">Yard Sign</option>
+                        <option value="social-media">Social Media</option>
+                        <option value="mls">MLS</option>
+                    </select>
+
+                    <div class="row">
+                        <div>
+                            <label>Timeline</label>
+                            <select name="timeline" required>
+                                <option value="0-3">0–3 months</option>
+                                <option value="3-6">3–6 months</option>
+                                <option value="6-12">6–12 months</option>
+                                <option value="browsing">Just browsing</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Pre-approval</label>
+                            <select name="preapproval" required>
+                                <option value="yes">Yes</option>
+                                <option value="no">No</option>
+                                <option value="unknown">Not sure</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <label>Preferred Areas</label>
-            <input type="text" name="preferred_areas" placeholder="Neighborhoods or cities">
 
             <div class="checkbox-field">
                 <input type="checkbox" id="workingWithBroker" name="working_with_broker" value="yes">
                 <label for="workingWithBroker">Are you currently working with a broker?</label>
             </div>
-
-            <label>How did you hear about us?</label>
-            <select name="heard_about_us" required>
-                <option value="" selected disabled>Select an option</option>
-                <option value="zillow">Zillow</option>
-                <option value="yard-sign">Yard Sign</option>
-                <option value="social-media">Social Media</option>
-                <option value="mls">MLS</option>
-            </select>
-
-            <label>Timeline</label>
-            <select name="timeline" required>
-                <option value="0-3">0–3 months</option>
-                <option value="3-6">3–6 months</option>
-                <option value="6-12">6–12 months</option>
-                <option value="browsing">Just browsing</option>
-            </select>
-
-            <label>Pre-approval</label>
-            <select name="preapproval" required>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-                <option value="unknown">Not sure</option>
-            </select>
 
             <label>Notes (optional)</label>
             <textarea name="notes" rows="3"></textarea>

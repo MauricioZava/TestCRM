@@ -229,6 +229,7 @@
         button:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 10px 22px rgba(50,111,159,.28); }
         .footer-note { margin-top: 12px; color: var(--muted); font-size: 13px; text-align: center; }
         .footer-note strong { color: var(--blue-dark); }
+        .selection-prompt { margin: 0 0 14px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 8px; background: #fff5dd; color: var(--ink); font-size: 14px; font-weight: 700; text-align: center; }
 
         @media (max-width: 540px) {
             body { padding: 8px; place-items: start center; }
@@ -257,6 +258,10 @@
         <div class="open-house-address">{{ open_house.address }}</div>
         <div class="open-house-agent">Hosted by {{ open_house.agent_name }}</div>
         <div class="open-house-date">{{ open_house.date }} · {{ open_house.time }}</div>
+        {% endif %}
+
+        {% if not open_house or not open_house.address or not open_house.agent_name %}
+        <div class="selection-prompt">Select Address or Agent</div>
         {% endif %}
 
         <h1>Open House Sign-In</h1>
@@ -302,8 +307,24 @@
                     </div>
                 </div>
 
-                <label>Best Time to Contact</label>
-                <input type="text" name="best_time_to_contact" placeholder="Example: Weekday evenings">
+                <div class="row">
+                    <div>
+                        <label>Best Time to Contact</label>
+                        <select name="best_time_to_contact">
+                            <option value="weekdays">Weekdays</option>
+                            <option value="weekends">Weekends</option>
+                            <option value="anytime">Anytime</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Preferred Time of Day</label>
+                        <select name="contact_time_of_day">
+                            <option value="daytime">Daytime</option>
+                            <option value="evenings">Evenings</option>
+                            <option value="anytime">Anytime</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div class="row">

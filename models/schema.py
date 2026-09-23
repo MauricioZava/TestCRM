@@ -27,7 +27,7 @@ def init_db():
         )
     """)
     existing_columns = {row[1] for row in c.execute("PRAGMA table_info(signins)").fetchall()}
-    for column in ("working_with_broker", "zip_code", "heard_about_us", "is_contact", "dashboard_hidden", "agent_id", "open_house_id", "first_name", "last_name", "alternate_phone", "preferred_contact_method", "best_time_to_contact", "lead_status", "property_type", "bedrooms", "preferred_areas"):
+    for column in ("working_with_broker", "zip_code", "heard_about_us", "is_contact", "dashboard_hidden", "agent_id", "open_house_id", "first_name", "last_name", "alternate_phone", "preferred_contact_method", "best_time_to_contact", "contact_time_of_day", "lead_status", "property_type", "bedrooms", "preferred_areas"):
         if column not in existing_columns:
             column_type = "INTEGER" if column in ("agent_id", "open_house_id") else "INTEGER DEFAULT 0" if column == "is_contact" else "TEXT"
             if column == "dashboard_hidden":

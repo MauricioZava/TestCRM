@@ -14,12 +14,12 @@ def list_homes_brief():
     conn = get_conn()
     c = conn.cursor()
     c.execute("""
-        SELECT id, property_id, address, city, state, zip_code
+        SELECT id, property_id, address, city, state, zip_code, is_current
         FROM homes
         ORDER BY is_current DESC, address, city
     """)
     rows = [
-        {"id": row[0], "property_id": row[1], "address": row[2], "city": row[3], "state": row[4], "zip_code": row[5]}
+            {"id": row[0], "property_id": row[1], "address": row[2], "city": row[3], "state": row[4], "zip_code": row[5], "is_current": row[6]}
         for row in c.fetchall()
     ]
     conn.close()
@@ -31,6 +31,20 @@ def unset_current_home():
     conn.execute("UPDATE homes SET is_current = 0")
     conn.commit()
     conn.close()
+
+
+def set_home_current(home_id, is_current):
+    conn = get_conn()
+    if is_current:
+        conn.execute("UPDATE homes SET is_current = 0")
+    cursor = conn.execute("UPDATE homes SET is_current = ? WHERE id = ?", (int(is_current), home_id))
+    if cursor.rowcount == 0:
+        conn.rollback()
+        conn.close()
+        return False
+    conn.commit()
+    conn.close()
+    return True
 
 
 def insert_home(property_id, agent_id, broker_id, address, city, state, zip_code, rooms, lot_size, is_current):

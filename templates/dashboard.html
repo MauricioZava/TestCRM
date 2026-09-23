@@ -559,6 +559,23 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
 .dashboard-task-status { background: #b7e4c7; color: #172033; }
 .dashboard-task-priority { background: #ffcf7a; color: #172033; }
 .dashboard-task-empty { color: #aeb9ca; font-size: 13px; }
+.dashboard-schedule { margin: 0 0 30px; padding: 17px 18px 18px; border: 1px solid #d9e1ea; border-radius: 14px; background: rgba(255,255,255,.94); box-shadow: 0 10px 28px rgba(23,32,51,.07); }
+.dashboard-schedule-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.dashboard-schedule-header h2 { margin: 0; color: #172033; font-size: 19px; }
+.dashboard-schedule-actions { display: flex; align-items: center; gap: 12px; }
+.dashboard-schedule-header a { color: #2563c7; font-size: 13px; font-weight: 800; text-decoration: none; }
+.dashboard-schedule-update { min-height: 34px; padding: 7px 11px; border: 0; border-radius: 8px; background: #2563c7; color: #fff; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+.dashboard-schedule-update:hover { background: #194c9d; }
+.dashboard-schedule-wrap { overflow-x: auto; border: 1px solid #d9e1ea; border-radius: 9px; }
+.dashboard-schedule-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+.dashboard-schedule-table th { padding: 10px 12px; border: 1px solid #d9e1ea; background: #edf2f8; color: #66748a; font-size: 10px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
+.dashboard-schedule-table td { padding: 10px 12px; border: 1px solid #e4e9f0; color: #172033; vertical-align: middle; }
+.dashboard-schedule-table tbody tr:nth-child(even) { background: #fafbfd; }
+.dashboard-schedule-status { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 10px; font-weight: 900; }
+.dashboard-schedule-status.completed { background: #e8f7f1; color: #287d68; }
+.dashboard-schedule-status.cancelled { background: #fff0f1; color: #c82333; }
+.dashboard-schedule-date.future { color: #287d68 !important; font-weight: 800; }
+.dashboard-current-home { width: 15px; height: 15px; margin: 0; accent-color: #287d68; }
 #contacts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
 .card { position: relative; display: flex; flex-direction: column; min-width: 0; margin-bottom: 0; overflow: hidden; border-top: 4px solid #ffb547; background: #fffdf8; }
 .card.motivation-high { border-top-color: #28a745; background: #f7fff9; }
@@ -672,6 +689,53 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
     {% endif %}
 </section>
 
+<section class="dashboard-schedule" aria-labelledby="dashboard-schedule-heading">
+    <div class="dashboard-schedule-header">
+        <h2 id="dashboard-schedule-heading">Open House Schedule</h2>
+        <div class="dashboard-schedule-actions">
+            <button class="dashboard-schedule-update" id="hide-completed-open-houses" type="button">Update</button>
+            <a href="{{ url_for('generate_open_house') }}">Manage schedule</a>
+        </div>
+    </div>
+    {% if open_houses %}
+    <div class="dashboard-schedule-wrap">
+        <table class="dashboard-schedule-table">
+            <thead>
+                <tr><th>Date</th><th>Time</th><th>Property</th><th>Hosting Agent</th><th>Status</th><th>Current Home</th><th>Capacity</th></tr>
+            </thead>
+            <tbody>
+                {% for event in open_houses %}
+                <tr data-open-house-status="{{ event.status|lower|e }}">
+                    <td><time class="dashboard-schedule-date" data-event-datetime="{{ event.event_date }}T{{ event.start_time }}">{{ event.event_date }}</time></td>
+                    <td>{{ event.start_time }} - {{ event.end_time }}</td>
+                    <td>{{ event.address or "Property unavailable" }}{% if event.city %}, {{ event.city }}{% endif %}</td>
+                    <td>{% if event.agent_first_name %}{{ event.agent_first_name }}{% if event.agent_middle_name %} {{ event.agent_middle_name }}{% endif %} {{ event.agent_last_name }}{% else %}Unassigned{% endif %}</td>
+                    <td><span class="dashboard-schedule-status{% if event.status|lower == 'completed' %} completed{% elif event.status|lower == 'cancelled' %} cancelled{% endif %}">{{ event.status }}</span></td>
+                    <td><input class="dashboard-current-home" type="checkbox" aria-label="Current home" disabled {% if event.is_current %}checked{% endif %}></td>
+                    <td>{{ event.visitor_capacity or "Not set" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="dashboard-task-empty">No open house events scheduled.</div>
+    {% endif %}
+</section>
+
+<script>
+    document.getElementById("hide-completed-open-houses")?.addEventListener("click", () => {
+        document.querySelectorAll(".dashboard-schedule-table tbody tr[data-open-house-status='completed']")
+            .forEach((row) => row.remove());
+    });
+
+    document.querySelectorAll(".dashboard-schedule-date[data-event-datetime]").forEach((dateElement) => {
+        const eventDateTime = new Date(dateElement.dataset.eventDatetime);
+        if (!Number.isNaN(eventDateTime.getTime()) && eventDateTime > new Date()) {
+            dateElement.classList.add("future");
+        }
+    });
+</script>
 
 {% set total_signins = signins|length %}
 {% set preapproved = signins|selectattr("preapproval", "equalto", "yes")|list|length %}
@@ -738,6 +802,7 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
             <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ s.phone or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Alt. Phone</span><span class="detail-value">{{ s.alternate_phone or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Best Time</span><span class="detail-value">{{ s.best_time_to_contact or "Not provided" }}</span></div>
+            <div class="detail-item"><span class="detail-label">Preferred Time</span><span class="detail-value">{{ s.contact_time_of_day or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Hosted by</span><span class="detail-value">{{ s.agent_name or "Not assigned" }}</span></div>
             <div class="detail-item"><span class="detail-label">Property Type</span><span class="detail-value">{{ s.property_type or "Not provided" }}</span></div>
             <div class="detail-item"><span class="detail-label">Bedrooms</span><span class="detail-value">{{ s.bedrooms or "Not provided" }}</span></div>

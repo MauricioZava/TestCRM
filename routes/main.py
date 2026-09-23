@@ -1,12 +1,14 @@
 import csv
 import io
 import json
+from datetime import datetime
 
 from flask import redirect, url_for, render_template, make_response
 
 from extensions import app
 from models.signins import list_dashboard_signins, export_rows
 from models.tasks import list_dashboard_tasks
+from models.open_houses import list_open_houses_detailed, mark_completed_open_houses
 
 
 @app.route("/")
@@ -18,6 +20,9 @@ def index():
 def dashboard():
     rows = list_dashboard_signins()
     task_rows = list_dashboard_tasks()
+    now = datetime.now()
+    mark_completed_open_houses(now)
+    open_houses = list_open_houses_detailed()
 
     dashboard_tasks = [
         {
@@ -61,9 +66,15 @@ def dashboard():
             "next_steps_json": json.loads(row[22] or "[]"),
             "created_at": row[23],
             "agent_name": " ".join(part for part in row[24:27] if part),
+            "contact_time_of_day": row[27],
         })
 
-    return render_template("dashboard.html", signins=signins, dashboard_tasks=dashboard_tasks)
+    return render_template(
+        "dashboard.html",
+        signins=signins,
+        dashboard_tasks=dashboard_tasks,
+        open_houses=open_houses,
+    )
 
 
 @app.route("/export_csv")

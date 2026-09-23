@@ -17,7 +17,30 @@ def list_agents():
     """)
     rows = c.fetchall()
     conn.close()
-    return [dict(zip(("id", *FIELDS), row)) for row in rows]
+    agents = []
+    for row in rows:
+        agent = dict(zip(("id", *FIELDS), row))
+        display_name = " ".join(part for part in (agent["first_name"], agent["middle_name"], agent["last_name"]) if part).strip()
+        agent["display_name"] = display_name or agent["first_name"] or agent["last_name"] or "Unnamed Agent"
+        agent["name"] = agent["display_name"]
+        agents.append(agent)
+    return agents
+
+
+def get_agent(agent_id):
+    conn = get_conn()
+    row = conn.execute(
+        f"SELECT id, {', '.join(FIELDS)} FROM agents WHERE id = ?",
+        (agent_id,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    agent = dict(zip(("id", *FIELDS), row))
+    display_name = " ".join(part for part in (agent["first_name"], agent["middle_name"], agent["last_name"]) if part).strip()
+    agent["display_name"] = display_name or agent["first_name"] or agent["last_name"] or "Unnamed Agent"
+    agent["name"] = agent["display_name"]
+    return agent
 
 
 def list_agents_brief():

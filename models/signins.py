@@ -60,10 +60,10 @@ def insert_signin(data):
     conn = get_conn()
     conn.execute("""
         INSERT INTO signins (
-            first_name, last_name, email, phone, alternate_phone, best_time_to_contact, visitor_type, currently, property_type, bedrooms, preferred_areas, working_with_broker,
+            first_name, last_name, email, phone, alternate_phone, best_time_to_contact, contact_time_of_day, visitor_type, currently, property_type, bedrooms, preferred_areas, working_with_broker,
             zip_code, heard_about_us, timeline, preapproval, notes, agent_id, open_house_id,
             motivation_score, followup_message, next_steps_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, data)
     conn.commit()
     conn.close()
@@ -151,6 +151,7 @@ def list_dashboard_signins():
              signins.working_with_broker, signins.zip_code, signins.heard_about_us, signins.is_contact, signins.dashboard_hidden, signins.timeline,
              signins.preapproval, signins.notes, signins.motivation_score, signins.followup_message,
              signins.next_steps_json, signins.created_at, agents.first_name, agents.middle_name, agents.last_name
+               , signins.contact_time_of_day
         FROM signins
         LEFT JOIN open_houses ON open_houses.id = signins.open_house_id
         LEFT JOIN agents ON agents.id = COALESCE(

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_new %}New Agent{% else %}Edit Agent{% endif %} | Lead Workspace</title>
+    <style>
+        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; }
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; padding: 24px 14px; color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        .container { width: 100%; max-width: 620px; margin: 0 auto; padding: clamp(20px, 5vw, 34px); border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.95); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
+        h1 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; font-size: clamp(28px, 7vw, 40px); letter-spacing: -.03em; }
+        .intro { margin: 8px 0 22px; color: var(--muted); line-height: 1.5; }
+        label { display: block; margin-top: 15px; color: var(--ink); font-size: 13px; font-weight: 800; }
+        input, select, textarea { display: block; box-sizing: border-box; width: 100%; min-height: 46px; margin-top: 6px; padding: 11px 12px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; font-size: 16px; }
+        textarea { min-height: 120px; resize: vertical; }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .row-2 label { margin-top: 15px; }
+        .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        input:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 26px; }
+        button, a { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; padding: 11px 16px; border: 0; border-radius: 9px; font: inherit; font-weight: 800; text-decoration: none; cursor: pointer; }
+        button { background: var(--blue); color: white; }
+        a { background: #e9ecef; color: var(--ink); }
+        @media (max-width: 440px) { body { padding: 12px 8px; } .container { padding: 20px 16px; border-radius: 12px; } .actions, .row-2, .row-3 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>{% if is_new %}New Agent{% else %}Edit Agent{% endif %}</h1>
+        <p class="intro">{% if is_new %}Add an agent and save their business details.{% else %}Editing {{ agent.name }}.{% endif %}</p>
+        <form method="post" action="{% if is_new %}{{ url_for('create_agent') }}{% endif %}">
+            <div class="row-2">
+                <div>
+                    <label for="first_name">First Name</label>
+                    <input id="first_name" type="text" name="first_name" value="{{ agent.first_name }}" required>
+                </div>
+                <div>
+                    <label for="middle_name">Middle Name</label>
+                    <input id="middle_name" type="text" name="middle_name" value="{{ agent.middle_name }}">
+                </div>
+            </div>
+
+            <label for="last_name">Last Name</label>
+            <input id="last_name" type="text" name="last_name" value="{{ agent.last_name }}" required>
+
+            <div class="row-2">
+                <div>
+                    <label for="email">Email</label>
+                    <input id="email" type="email" name="email" value="{{ agent.email }}">
+                </div>
+                <div>
+                    <label for="phone">Phone</label>
+                    <input id="phone" type="tel" name="phone" value="{{ agent.phone }}" placeholder="###-###-####" inputmode="numeric" autocomplete="tel-national" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" title="Enter a phone number as ###-###-####">
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div>
+                    <label for="broker-selector">Broker</label>
+                    <select id="broker-selector">
+                        <option value="">Select a broker</option>
+                        {% for broker in brokers %}
+                        <option value="{{ broker.company_name|e }}" {% if agent.brokerage == broker.company_name %}selected{% endif %}>{{ broker.company_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="brokerage">Brokerage</label>
+                    <input id="brokerage" type="text" name="brokerage" value="{{ agent.brokerage }}">
+                </div>
+                <div>
+                    <label for="website">Website</label>
+                    <input id="website" type="url" name="website" value="{{ agent.website }}">
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div>
+                    <label for="license_number">License Number</label>
+                    <input id="license_number" type="text" name="license_number" value="{{ agent.license_number }}">
+                </div>
+                <div>
+                    <label for="license_state">License State</label>
+                    <input id="license_state" type="text" name="license_state" value="{{ agent.license_state }}">
+                </div>
+            </div>
+
+            <label for="office_address">Office Address</label>
+            <input id="office_address" type="text" name="office_address" value="{{ agent.office_address }}">
+
+            <div class="row-3">
+                <div>
+                    <label for="city">City</label>
+                    <input id="city" type="text" name="city" value="{{ agent.city }}">
+                </div>
+                <div>
+                    <label for="state">State</label>
+                    <input id="state" type="text" name="state" value="{{ agent.state }}">
+                </div>
+                <div>
+                    <label for="zip_code">Zip Code</label>
+                    <input id="zip_code" type="text" name="zip_code" value="{{ agent.zip_code }}">
+                </div>
+            </div>
+
+            <label for="specialties">Specialties</label>
+            <input id="specialties" type="text" name="specialties" value="{{ agent.specialties }}" placeholder="Residential, luxury, first-time buyers">
+
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="5">{{ agent.notes }}</textarea>
+
+            <div class="actions">
+                <button type="submit">{% if is_new %}Create Agent{% else %}Save Agent{% endif %}</button>
+                <a href="{{ url_for('agents') }}">Cancel</a>
+            </div>
+        </form>
+    </main>
+    <script>
+        const phoneInput = document.getElementById("phone");
+        const brokerSelector = document.getElementById("broker-selector");
+        const brokerageInput = document.getElementById("brokerage");
+
+        function formatPhone(value) {
+            const digits = value.replace(/\D/g, "").slice(0, 10);
+            if (digits.length <= 3) return digits;
+            if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+            return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+        }
+
+        phoneInput.value = formatPhone(phoneInput.value);
+        phoneInput.addEventListener("input", () => {
+            phoneInput.value = formatPhone(phoneInput.value);
+        });
+
+        brokerSelector.addEventListener("change", () => {
+            if (brokerSelector.value) brokerageInput.value = brokerSelector.value;
+        });
+    </script>
+</body>
+</html>

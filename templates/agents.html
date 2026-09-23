@@ -6,74 +6,262 @@
     <title>Agents | Lead Workspace</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; --gold: #ffb547; --red: #c82333; }
+        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; --green: #287d68; --gold: #ffb547; --red: #c82333; }
         * { box-sizing: border-box; }
-        body { min-height: 100vh; margin: 0; color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
-        .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
-        .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100vh; padding: 28px 18px; background: #172033; color: #fff; }
-        .brand { padding: 0 14px 30px; border-bottom: 1px solid rgba(255,255,255,.12); }
-        .brand-mark { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 14px; border-radius: 12px; background: var(--gold); color: var(--ink); font-size: 15px; font-weight: 800; }
-        .brand strong, .brand small { display: block; } .brand strong { font-size: 20px; } .brand small { margin-top: 5px; color: #aeb9ca; font-size: 12px; }
-        .sidebar-nav { display: grid; gap: 9px; margin-top: 28px; }
-        .sidebar-nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; letter-spacing: .02em; }
-        .sidebar-nav a::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: var(--ink); font-size: 13px; font-weight: 800; }
-        .nav-dashboard::before { content: "D"; background: #ffb547; } .nav-contacts::before { content: "C"; background: #f28f8f; } .nav-tasks::before { content: "T"; background: #c1ccd9; } .nav-properties::before { content: "P"; background: #6ed3cf; } .nav-agents::before { content: "A"; background: #f6c177; } .nav-brokers::before { content: "B"; background: #b7e4c7; } .nav-open-house::before { content: "O"; background: #b7e4c7; } .nav-signins::before { content: "S"; background: #9ca7ff; }
-        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255,255,255,.1); color: #fff; transform: translateX(3px); } .sidebar-nav a.active { border-left-color: var(--gold); }
-        .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
-        .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); } .page { max-width: 1480px; margin: 0 auto; }
-        .topbar { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+        body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        .page { max-width: 1480px; margin: 0 auto; }
+        .topbar { display: grid; grid-template-columns: minmax(330px, 420px) minmax(0, 1fr) auto; align-items: end; gap: 24px; margin-bottom: 30px; }
+        .search-control label { display: block; margin: 0 0 6px; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .search-row { display: flex; align-items: center; gap: 10px; }
+        .search-row .button { flex: 0 0 auto; white-space: nowrap; }
+        .search-input-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
+        .search-input-wrap::before { position: absolute; top: 50%; left: 12px; color: var(--muted); content: "⌕"; font-size: 20px; line-height: 1; transform: translateY(-55%); }
+        .search-control input { width: 100%; min-height: 42px; padding: 9px 34px 9px 34px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.88); color: var(--ink); font: inherit; }
+        .search-control input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .search-count { display: block; min-height: 15px; margin-top: 5px; color: var(--muted); font-size: 11px; }
+        .search-clear { position: absolute; top: 50%; right: 8px; width: 24px; min-height: 24px; padding: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 17px; transform: translateY(-50%); }
+        .search-clear:hover { background: #e7edf1; filter: none; }
+        .title-block { min-width: 0; }
         .eyebrow { margin: 0 0 7px; color: #d9922e; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
-        h1, h2 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; letter-spacing: -.03em; } h1 { font-size: clamp(30px, 4vw, 46px); } h2 { font-size: 21px; }
-        .subtitle, .panel-intro { margin: 8px 0 0; color: var(--muted); } .panel-intro { font-size: 13px; }
+        h1, h2 { font-family: "Space Grotesk", Arial, sans-serif; letter-spacing: -.03em; }
+        h1 { margin: 0; font-size: clamp(30px, 4vw, 46px); }
+        h2 { margin: 0; font-size: 21px; }
+        .subtitle { margin: 8px 0 0; color: var(--muted); }
+        .top-actions, .contact-actions { display: flex; flex-wrap: wrap; gap: 9px; }
         .button, button { min-height: 40px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; }
-        .button:hover, button:hover { filter: brightness(.92); } .button.secondary { background: var(--ink); } .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
-        .workspace { display: grid; grid-template-columns: minmax(310px, 420px) minmax(0, 1fr); gap: 22px; align-items: start; }
+        .button:hover, button:hover { filter: brightness(.92); }
+        .button.secondary { background: var(--ink); }
+        .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
+        .workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
         .panel { min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
-        .panel-header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 20px; } .count { color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; } .field { min-width: 0; } .wide { grid-column: 1 / -1; }
-        label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-        input, textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; }
-        textarea { min-height: 82px; resize: vertical; } input:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
-        .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; } .delete-button { grid-column: 1 / -1; background: #fff0f1; color: var(--red); } button:disabled { background: #a9b4c3; cursor: not-allowed; }
-        .agent-list { display: grid; gap: 10px; } .agent-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 16px; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 11px; background: var(--paper); cursor: pointer; }
-        .agent-card:hover, .agent-card.selected-agent { border-color: #9ebce7; background: #f4f8ff; } .agent-name { font-size: 16px; font-weight: 800; } .agent-brokerage { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
-        .agent-details { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 8px 16px; margin-top: 12px; } .detail { min-width: 0; } .detail-label { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; } .detail-value { overflow-wrap: anywhere; color: var(--ink); font-size: 12px; font-weight: 600; }
-        .badge { align-self: start; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; } .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
-        @media (max-width: 980px) { .workspace { grid-template-columns: 1fr; } } @media (max-width: 768px) { .app-shell { display: block; } .sidebar { position: relative; min-height: auto; padding: 18px; } .brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; } .brand-mark { margin: 0; } .brand small { margin-top: 2px; } .sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; } .sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; } .sidebar-nav a.active { border-bottom-color: var(--gold); } .sidebar-footer { display: none; } .content-shell { padding: 28px 16px; } } @media (max-width: 520px) { .topbar { align-items: start; flex-direction: column; } .form-grid, .agent-details, .form-actions { grid-template-columns: 1fr; } .wide, .delete-button { grid-column: auto; } .panel { padding: 18px; } }
+        .panel-header { display: flex; align-items: start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+        .panel-intro { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+        .count { color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
+        .contact-list { display: grid; gap: 10px; }
+        .contact-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 16px; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 11px; background: var(--paper); cursor: pointer; }
+        .contact-row:hover, .contact-row.selected, .contact-row.search-match { border-color: #9ebce7; background: #f4f8ff; }
+        .contact-row.search-current { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,199,.14); }
+        .contact-main { min-width: 0; }
+        .contact-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+        .contact-name { display: block; overflow: hidden; color: var(--ink); font-size: 16px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+        .contact-name mark, .contact-email mark { padding: 1px 2px; border-radius: 3px; background: #ffcf7a; color: var(--ink); }
+        .contact-sections { display: grid; grid-template-columns: repeat(3, minmax(170px, 1fr)); gap: 10px; margin-top: 10px; }
+        .meta-group { padding: 10px; border: 1px solid #e7edf4; border-radius: 10px; background: rgba(255,255,255,.7); }
+        .meta-title { margin: 0 0 8px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .meta-row { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 8px; margin-bottom: 5px; font-size: 12px; }
+        .meta-row:last-child { margin-bottom: 0; }
+        .meta-row.location-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .location-item { min-width: 0; }
+        .meta-label { color: var(--muted); font-weight: 700; }
+        .meta-value { overflow-wrap: anywhere; color: var(--ink); font-weight: 600; }
+        .meta-value.contact-email { color: #194c9d; }
+        .badge { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; text-transform: capitalize; }
+        .score { min-width: 48px; padding: 7px 8px; border-radius: 8px; background: #eef8f3; color: var(--green); font-size: 13px; font-weight: 900; text-align: center; }
+        .contact-actions { justify-content: flex-end; margin-top: 10px; }
+        .small-button { min-height: 32px; padding: 6px 9px; font-size: 12px; }
+        .small-button.edit { background: #f6c177; color: var(--ink); }
+        .small-button.delete { background: #fff0f1; color: var(--red); }
+        .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
+        @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } }
+        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-sections { grid-template-columns: 1fr; } .meta-row { grid-template-columns: 82px minmax(0, 1fr); } .contact-actions { justify-content: flex-start; } }
+        body { min-height: 100vh; padding: 0; }
+        .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+        .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; padding: 28px 18px; background: #172033; color: #fff; }
+        .brand { padding: 0 14px 30px; border-bottom: 1px solid rgba(255,255,255,.12); }
+        .brand-mark { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 14px; border-radius: 12px; background: #ffb547; color: #172033; font-size: 15px; font-weight: 800; }
+        .brand strong, .brand small { display: block; }
+        .brand strong { font-size: 20px; }
+        .brand small { margin-top: 5px; color: #aeb9ca; font-size: 12px; }
+        .sidebar-nav { display: grid; gap: 9px; margin-top: 28px; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; letter-spacing: .02em; transition: background .2s ease, color .2s ease, transform .2s ease; }
+        .sidebar-nav a::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: #172033; font-size: 13px; font-weight: 800; }
+        .nav-dashboard::before { content: "D"; background: #ffb547; }
+        .nav-contacts::before { content: "C"; background: #f28f8f; }
+        .nav-properties::before { content: "P"; background: #6ed3cf; }
+        .nav-agents::before { content: "A"; background: #f6c177; }
+        .nav-brokers::before { content: "B"; background: #b7e4c7; }
+        .nav-open-house::before { content: "O"; background: #b7e4c7; }
+        .nav-signins::before { content: "S"; background: #9ca7ff; }
+        .nav-analytics::before { content: "A"; background: #c1ccd9; }
+        .nav-settings::before { content: "\2699"; background: #c1ccd9; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { transform: translateX(3px); background: rgba(255,255,255,.1); color: #fff; }
+        .sidebar-nav a.active { border-left-color: #ffb547; }
+        .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
+        .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); }
+        @media (max-width: 768px) { .app-shell { display: block; } .sidebar { position: relative; min-height: auto; padding: 18px; } .brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; } .brand-mark { margin: 0; } .brand small { margin-top: 2px; } .sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; } .sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; } .sidebar-nav a.active { border-bottom-color: #ffb547; } .sidebar-footer { display: none; } .content-shell { padding: 28px 16px; } }
     </style>
 </head>
 <body>
 <div class="app-shell">
     <aside class="sidebar">
-        <div class="brand"><span class="brand-mark">FH</span><div><strong>The Best Of Florida Homes</strong><small>Lead workspace</small></div></div>
+        <div class="brand">
+            <span class="brand-mark">FH</span>
+            <div>
+                <strong>The Best Of Florida Homes</strong>
+                <small>Lead workspace</small>
+            </div>
+        </div>
+
         <nav class="sidebar-nav" aria-label="Main navigation">
-            <a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a><a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a><a class="nav-tasks" href="{{ url_for('tasks') }}">Tasks</a><a class="nav-properties" href="{{ url_for('properties') }}">Properties</a><a class="active nav-agents" href="{{ url_for('agents') }}">Agents</a><a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a><a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a><a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a><a href="{{ url_for('export_csv') }}">Export CSV</a><a href="{{ url_for('logout') }}">Log Out</a>
+            <a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
+            <a class="nav-analytics" href="{{ url_for('tasks') }}">Tasks</a>
+            <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
+            <a class="active nav-agents" href="{{ url_for('agents') }}">Agents</a>
+            <a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
+            <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
+            <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
+            <a href="{{ url_for('export_csv') }}">Export CSV</a>
+            <a class="nav-settings" href="{{ url_for('logout') }}">Log Out</a>
         </nav>
+
         <div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div>
     </aside>
-    <main class="content-shell"><div class="page">
-        <header class="topbar"><div><p class="eyebrow">Team directory</p><h1>Agents</h1><p class="subtitle">Keep realtor contact, license, brokerage, and office details in one place.</p></div><div><a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a><button class="button ghost" type="button" id="new-agent-button">New agent</button></div></header>
-        <div class="workspace">
-            <section class="panel"><div class="panel-header"><div><h2 id="form-title">Add an agent</h2><p class="panel-intro">Required fields are marked with an asterisk.</p></div></div>
-                <form method="post" id="agent-form"><input type="hidden" name="agent_id" id="agent-id"><div class="form-grid">
-                    <div class="field"><label for="first-name">First Name *</label><input id="first-name" name="first_name" required></div><div class="field"><label for="middle-name">Middle Name</label><input id="middle-name" name="middle_name"></div><div class="field"><label for="last-name">Last Name *</label><input id="last-name" name="last_name" required></div><div class="field"><label for="email">Email</label><input id="email" name="email" type="email"></div><div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel"></div><div class="field"><label for="brokerage">Brokerage</label><input id="brokerage" name="brokerage"></div><div class="field"><label for="license-number">License Number</label><input id="license-number" name="license_number"></div><div class="field"><label for="license-state">License State</label><input id="license-state" name="license_state"></div><div class="field wide"><label for="office-address">Office Address</label><input id="office-address" name="office_address"></div><div class="field"><label for="city">City</label><input id="city" name="city"></div><div class="field"><label for="state">State</label><input id="state" name="state"></div><div class="field"><label for="zip-code">Zip Code</label><input id="zip-code" name="zip_code"></div><div class="field"><label for="website">Website</label><input id="website" name="website" type="url"></div><div class="field wide"><label for="specialties">Specialties</label><input id="specialties" name="specialties" placeholder="Residential, luxury, first-time buyers"></div><div class="field wide"><label for="notes">Notes</label><textarea id="notes" name="notes"></textarea></div>
-                </div><div class="form-actions"><button id="add-agent-button" type="submit" name="action" value="add">Add Agent</button><button type="submit" name="action" value="update">Update Agent</button><button type="submit" name="action" value="delete" class="delete-button" onclick="return confirm('Delete this agent?');">Delete Agent</button></div></form>
-            </section>
-            <section class="panel"><div class="panel-header"><div><h2>Saved agents</h2><p class="panel-intro">Select an agent to load their current table values into the form.</p></div><span class="count">{{ agents|length }} agent{% if agents|length != 1 %}s{% endif %}</span></div>
-                {% if agents %}<div class="agent-list">{% for agent in agents %}<article class="agent-card" data-agent-id="{{ agent.id }}" data-first-name="{{ agent.first_name|e }}" data-middle-name="{{ agent.middle_name|e }}" data-last-name="{{ agent.last_name|e }}" data-email="{{ agent.email|e }}" data-phone="{{ agent.phone|e }}" data-brokerage="{{ agent.brokerage|e }}" data-license-number="{{ agent.license_number|e }}" data-license-state="{{ agent.license_state|e }}" data-office-address="{{ agent.office_address|e }}" data-city="{{ agent.city|e }}" data-state="{{ agent.state|e }}" data-zip-code="{{ agent.zip_code|e }}" data-website="{{ agent.website|e }}" data-specialties="{{ agent.specialties|e }}" data-notes="{{ agent.notes|e }}"><div><div class="agent-name">{{ agent.first_name }}{% if agent.middle_name %} {{ agent.middle_name }}{% endif %} {{ agent.last_name }}</div><div class="agent-brokerage">{{ agent.brokerage or "No brokerage listed" }}</div><div class="agent-details"><div class="detail"><span class="detail-label">Email</span><span class="detail-value">{{ agent.email or "Not set" }}</span></div><div class="detail"><span class="detail-label">Phone</span><span class="detail-value">{{ agent.phone or "Not set" }}</span></div><div class="detail"><span class="detail-label">License</span><span class="detail-value">{{ agent.license_number or "Not set" }}{% if agent.license_state %} ({{ agent.license_state }}){% endif %}</span></div><div class="detail"><span class="detail-label">Office</span><span class="detail-value">{{ agent.city or "Not set" }}{% if agent.state %}, {{ agent.state }}{% endif %}</span></div></div></div><span class="badge">Agent</span></article>{% endfor %}</div>{% else %}<div class="empty-state">No agents have been added yet.</div>{% endif %}
-            </section>
+
+    <main class="content-shell">
+        <div class="page">
+            <header class="topbar">
+                <div class="search-control">
+                    <label for="agent-search">Find an agent</label>
+                    <div class="search-row">
+                        <div class="search-input-wrap">
+                            <input id="agent-search" type="search" placeholder="Search names, emails, brokerage..." autocomplete="off" aria-describedby="search-count">
+                            <button class="search-clear" id="search-clear" type="button" aria-label="Clear agent search" hidden>&times;</button>
+                        </div>
+                        <a class="button" href="{{ url_for('create_agent') }}">New agent</a>
+                    </div>
+                    <span class="search-count" id="search-count" aria-live="polite"></span>
+                </div>
+                <div class="title-block">
+                    <p class="eyebrow">Lead workspace</p>
+                    <h1>Agents</h1>
+                </div>
+                <nav class="top-actions" aria-label="Agents navigation">
+                    <a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    <a class="button ghost" href="{{ url_for('tasks') }}">Tasks</a>
+                </nav>
+            </header>
+
+            <div class="workspace">
+                <section class="panel" aria-labelledby="agent-list-title">
+                    <div class="panel-header">
+                        <div><h2 id="agent-list-title">Your agents</h2><p class="panel-intro">Manage team directory details in the same workspace layout as contacts.</p></div>
+                        <div class="top-actions"><span class="count">{{ agents|length }} agent{% if agents|length != 1 %}s{% endif %}</span></div>
+                    </div>
+                    {% if agents %}
+                    <div class="contact-list">
+                        {% for agent in agents %}
+                        <article class="contact-row" data-search="{{ [agent.display_name, agent.email, agent.phone, agent.brokerage, agent.license_number, agent.city, agent.state, agent.specialties]|join(' ')|lower|e }}">
+                            <div class="contact-main">
+                                <div class="contact-head">
+                                    <span class="contact-name">{{ agent.display_name }}</span>
+                                    <span class="badge">Agent</span>
+                                </div>
+                                <div class="contact-sections">
+                                    <section class="meta-group" aria-label="Contact details">
+                                        <p class="meta-title">Contact</p>
+                                        <div class="meta-row"><span class="meta-label">Email</span><span class="meta-value contact-email">{{ agent.email or "No email" }}</span></div>
+                                        <div class="meta-row"><span class="meta-label">Phone</span><span class="meta-value">{{ agent.phone or "No phone" }}</span></div>
+                                        <div class="meta-row"><span class="meta-label">Website</span><span class="meta-value">{{ agent.website or "Not set" }}</span></div>
+                                        <div class="meta-row"><span class="meta-label">Brokerage</span><span class="meta-value">{{ agent.brokerage or "Not set" }}</span></div>
+                                        <div class="meta-row"><span class="meta-label">Office</span><span class="meta-value">{{ agent.office_address or "Not set" }}</span></div>
+                                        <div class="meta-row location-row">
+                                            <div class="location-item"><span class="meta-label">City</span><div class="meta-value">{{ agent.city or "Not set" }}</div></div>
+                                            <div class="location-item"><span class="meta-label">State</span><div class="meta-value">{{ agent.state or "Not set" }}</div></div>
+                                            <div class="location-item"><span class="meta-label">Zip</span><div class="meta-value">{{ agent.zip_code or "Not set" }}</div></div>
+                                        </div>
+                                    </section>
+                                    <section class="meta-group" aria-label="License details">
+                                        <p class="meta-title">License</p>
+                                        <div class="meta-row"><span class="meta-label">Number</span><span class="meta-value">{{ agent.license_number or "Not set" }}</span></div>
+                                        <div class="meta-row"><span class="meta-label">License State</span><span class="meta-value">{{ agent.license_state or "Not set" }}</span></div>
+                                    </section>
+                                    <section class="meta-group" aria-label="Coverage and notes">
+                                        <p class="meta-title">Coverage</p>
+                                        <div class="meta-row"><span class="meta-label">Specialties</span><span class="meta-value">{{ agent.specialties or "Not set" }}</span></div>
+                                        <div class="meta-row"><span class="meta-label">Notes</span><span class="meta-value">{{ agent.notes or "Not set" }}</span></div>
+                                    </section>
+                                </div>
+                                <div class="contact-actions">
+                                    <a class="button small-button edit" href="{{ url_for('edit_agent', agent_id=agent.id) }}">Edit Agent</a>
+                                    <form method="post" action="{{ url_for('remove_agent', agent_id=agent.id) }}" onsubmit="return confirm('Delete this agent?');">
+                                        <button class="small-button delete" type="submit">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <span class="score">A</span>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">No agents yet.</div>
+                    {% endif %}
+                </section>
+            </div>
         </div>
-    </div></main>
+    </main>
 </div>
 <script>
-    const agentForm = document.getElementById("agent-form");
-    const addAgentButton = document.getElementById("add-agent-button");
-    const newAgentButton = document.getElementById("new-agent-button");
-    const formTitle = document.getElementById("form-title");
-    const agentFields = ["first_name", "middle_name", "last_name", "email", "phone", "brokerage", "license_number", "license_state", "office_address", "city", "state", "zip_code", "website", "specialties", "notes"];
-    function resetAgentForm() { agentForm.reset(); document.getElementById("agent-id").value = ""; addAgentButton.disabled = false; formTitle.textContent = "Add an agent"; document.querySelectorAll(".agent-card").forEach((item) => item.classList.remove("selected-agent")); document.getElementById("first-name").focus(); }
-    newAgentButton.addEventListener("click", resetAgentForm);
-    document.querySelectorAll(".agent-card").forEach((card) => { card.addEventListener("click", () => { document.getElementById("agent-id").value = card.dataset.agentId; agentFields.forEach((name) => { agentForm.elements[name].value = card.getAttribute(`data-${name.replaceAll("_", "-")}`) || ""; }); addAgentButton.disabled = true; formTitle.textContent = "Update agent"; document.querySelectorAll(".agent-card").forEach((item) => item.classList.remove("selected-agent")); card.classList.add("selected-agent"); agentForm.scrollIntoView({ behavior: "smooth", block: "start" }); }); });
+    const searchInput = document.getElementById("agent-search");
+    const searchClear = document.getElementById("search-clear");
+    const searchCount = document.getElementById("search-count");
+    const agentRows = [...document.querySelectorAll(".contact-row")];
+    let matchingRows = [];
+    let activeMatch = -1;
+
+    function escapeHtml(value) {
+        return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
+    }
+
+    function highlightMatchingFields(row, query) {
+        const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        row.querySelectorAll(".contact-name, .contact-email").forEach((field) => {
+            const originalValue = field.dataset.originalValue || field.textContent;
+            field.dataset.originalValue = originalValue;
+            const fieldMatches = query && new RegExp(escapedQuery, "i").test(originalValue);
+            field.innerHTML = fieldMatches
+                ? escapeHtml(originalValue).replace(new RegExp(`(${escapedQuery})`, "ig"), "<mark>$1</mark>")
+                : escapeHtml(originalValue);
+        });
+    }
+
+    function updateSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        matchingRows = agentRows.filter((row) => row.dataset.search.includes(query));
+        activeMatch = matchingRows.length ? Math.min(activeMatch < 0 ? 0 : activeMatch, matchingRows.length - 1) : -1;
+        agentRows.forEach((row) => {
+            const isMatch = matchingRows.includes(row);
+            row.hidden = Boolean(query) && !isMatch;
+            row.style.display = Boolean(query) && !isMatch ? "none" : "";
+            row.classList.toggle("search-match", Boolean(query) && isMatch);
+            row.classList.remove("search-current");
+            highlightMatchingFields(row, isMatch ? query : "");
+        });
+        if (activeMatch >= 0) matchingRows[activeMatch].classList.add("search-current");
+        searchClear.hidden = !query;
+        searchCount.textContent = query ? `${matchingRows.length} match${matchingRows.length === 1 ? "" : "es"}${matchingRows.length > 1 ? " · Tab for next" : ""}` : "";
+    }
+
+    searchInput.addEventListener("input", () => {
+        activeMatch = 0;
+        updateSearch();
+    });
+
+    searchInput.addEventListener("keydown", (event) => {
+        if (event.key !== "Tab" || matchingRows.length < 2) return;
+        event.preventDefault();
+        activeMatch = (activeMatch + 1) % matchingRows.length;
+        matchingRows.forEach((row) => row.classList.remove("search-current"));
+        const nextRow = matchingRows[activeMatch];
+        nextRow.classList.add("search-current");
+        nextRow.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+
+    searchClear.addEventListener("click", () => {
+        searchInput.value = "";
+        searchInput.focus();
+        updateSearch();
+    });
 </script>
 </body>
 </html>

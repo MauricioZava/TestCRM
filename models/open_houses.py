@@ -8,7 +8,7 @@ def list_open_houses_detailed():
         SELECT oh.id, oh.home_id, oh.agent_id, oh.event_date, oh.start_time, oh.end_time,
                oh.title, oh.status, oh.visitor_capacity, oh.rsvp_contact,
                oh.public_notes, oh.internal_notes,
-               h.property_id, h.address, h.city, h.state, h.zip_code,
+               h.property_id, h.address, h.city, h.state, h.zip_code, h.is_current,
                a.first_name, a.middle_name, a.last_name, a.brokerage
         FROM open_houses oh
         LEFT JOIN homes h ON h.id = oh.home_id
@@ -21,8 +21,9 @@ def list_open_houses_detailed():
             "start_time": row[4], "end_time": row[5], "title": row[6], "status": row[7],
             "visitor_capacity": row[8], "rsvp_contact": row[9], "public_notes": row[10],
             "internal_notes": row[11], "property_id": row[12], "address": row[13],
-            "city": row[14], "state": row[15], "zip_code": row[16], "agent_first_name": row[17],
-            "agent_middle_name": row[18], "agent_last_name": row[19], "brokerage": row[20],
+            "city": row[14], "state": row[15], "zip_code": row[16], "is_current": row[17],
+            "agent_first_name": row[18], "agent_middle_name": row[19], "agent_last_name": row[20],
+            "brokerage": row[21],
         }
         for row in c.fetchall()
     ]
@@ -51,7 +52,7 @@ def insert_open_house(fields):
 
 def update_open_house(fields, open_house_id):
     conn = get_conn()
-    conn.execute("""
+    cursor = conn.execute("""
         UPDATE open_houses
         SET home_id = ?, agent_id = ?, event_date = ?, start_time = ?, end_time = ?,
             title = ?, status = ?, visitor_capacity = ?, rsvp_contact = ?,
@@ -59,7 +60,26 @@ def update_open_house(fields, open_house_id):
         WHERE id = ?
     """, (*fields, open_house_id))
     conn.commit()
+    updated_count = cursor.rowcount
     conn.close()
+    return updated_count
+
+
+def mark_completed_open_houses(now):
+    conn = get_conn()
+    cursor = conn.execute(
+        """
+        UPDATE open_houses
+        SET status = 'Completed'
+        WHERE lower(trim(status)) = 'scheduled'
+          AND datetime(event_date || ' ' || end_time) <= datetime(?)
+        """,
+        (now.isoformat(sep=" ", timespec="seconds"),),
+    )
+    conn.commit()
+    updated_count = cursor.rowcount
+    conn.close()
+    return updated_count
 
 
 def get_next_scheduled():

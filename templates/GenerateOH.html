@@ -3,73 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open Houses | Lead Workspace</title>
+    <title>Open House Control | Lead Workspace</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; --green: #287d68; --gold: #ffb547; --red: #c82333; }
         * { box-sizing: border-box; }
-        body { min-height: 100vh; margin: 0; color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
-        .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }.sidebar { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100vh; padding: 28px 18px; background: #172033; color: #fff; }.brand { padding: 0 14px 30px; border-bottom: 1px solid rgba(255,255,255,.12); }.brand-mark { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 14px; border-radius: 12px; background: var(--gold); color: var(--ink); font-size: 15px; font-weight: 800; }.brand strong, .brand small { display: block; }.brand strong { font-size: 20px; }.brand small { margin-top: 5px; color: #aeb9ca; font-size: 12px; }
-        .sidebar-nav { display: grid; gap: 9px; margin-top: 28px; }.sidebar-nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; letter-spacing: .02em; }.sidebar-nav a::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: var(--ink); font-size: 13px; font-weight: 800; }.nav-dashboard::before { content: "D"; background: #ffb547; }.nav-contacts::before { content: "C"; background: #f28f8f; }.nav-tasks::before { content: "T"; background: #c1ccd9; }.nav-properties::before { content: "P"; background: #6ed3cf; }.nav-agents::before { content: "A"; background: #f6c177; }.nav-brokers::before { content: "B"; background: #b7e4c7; }.nav-open-house::before { content: "O"; background: #b7e4c7; }.nav-signins::before { content: "S"; background: #9ca7ff; }.sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255,255,255,.1); color: #fff; transform: translateX(3px); }.sidebar-nav a.active { border-left-color: var(--gold); }.sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
-        .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); }.page { max-width: 1480px; margin: 0 auto; }.topbar { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }.eyebrow { margin: 0 0 7px; color: #d9922e; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }h1, h2 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; letter-spacing: -.03em; }h1 { font-size: clamp(30px, 4vw, 46px); }h2 { font-size: 21px; }.subtitle, .panel-intro { margin: 8px 0 0; color: var(--muted); }.panel-intro { font-size: 13px; }
-        .button, button { min-height: 40px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; }.button:hover, button:hover { filter: brightness(.92); }.button.secondary { background: var(--ink); }.button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
-        .workspace { display: grid; grid-template-columns: minmax(330px, 460px) minmax(0, 1fr); gap: 22px; align-items: start; }.panel { min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); }.panel-header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 20px; }.count { color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }.field { min-width: 0; }.wide { grid-column: 1 / -1; }label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }input, select, textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; }textarea { min-height: 78px; resize: vertical; }input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }.form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; }.delete-button { grid-column: 1 / -1; background: #fff0f1; color: var(--red); }button:disabled { background: #a9b4c3; cursor: not-allowed; }
-        .event-list { display: grid; gap: 10px; }.event-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 16px; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 11px; background: var(--paper); cursor: pointer; }.event-card:hover, .event-card.selected-open-house { border-color: #9ebce7; background: #f4f8ff; }.event-title { font-size: 16px; font-weight: 800; }.event-location { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }.event-details { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 8px 16px; margin-top: 12px; }.detail { min-width: 0; }.detail-label { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }.detail-value { overflow-wrap: anywhere; color: var(--ink); font-size: 12px; font-weight: 600; }.badge { align-self: start; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; }.badge.completed { background: #e8f7f1; color: var(--green); }.badge.cancelled { background: #fff0f1; color: var(--red); }.empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
-        @media (max-width: 1050px) { .workspace { grid-template-columns: 1fr; } }@media (max-width: 768px) { .app-shell { display: block; }.sidebar { position: relative; min-height: auto; padding: 18px; }.brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; }.brand-mark { margin: 0; }.brand small { margin-top: 2px; }.sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; }.sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; }.sidebar-nav a.active { border-bottom-color: var(--gold); }.sidebar-footer { display: none; }.content-shell { padding: 28px 16px; } }@media (max-width: 520px) { .topbar { align-items: start; flex-direction: column; }.form-grid, .event-details, .form-actions { grid-template-columns: 1fr; }.wide, .delete-button { grid-column: auto; }.panel { padding: 18px; } }
-        .event-actions { display: flex; justify-content: flex-end; margin-top: 12px; }.event-delete-button { min-height: 32px; padding: 6px 9px; background: #fff0f1; color: var(--red); font-size: 12px; }
+        body { min-height: 100vh; margin: 0; color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", sans-serif; }
+        .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+        .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100vh; padding: 28px 18px; background: #172033; color: #fff; }
+        .brand { padding: 0 14px 30px; border-bottom: 1px solid rgba(255,255,255,.12); }
+        .brand-mark { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 14px; border-radius: 12px; background: var(--gold); color: var(--ink); font-size: 15px; font-weight: 800; }
+        .brand strong, .brand small { display: block; }
+        .brand strong { font-size: 20px; }
+        .brand small { margin-top: 5px; color: #aeb9ca; font-size: 12px; }
+        .sidebar-nav { display: grid; gap: 9px; margin-top: 28px; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; }
+        .sidebar-nav a::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: var(--ink); font-size: 13px; font-weight: 800; }
+        .nav-dashboard::before { content: "D"; background: #ffb547; }
+        .nav-contacts::before { content: "C"; background: #f28f8f; }
+        .nav-tasks::before { content: "T"; background: #c1ccd9; }
+        .nav-properties::before { content: "P"; background: #6ed3cf; }
+        .nav-agents::before { content: "A"; background: #f6c177; }
+        .nav-brokers::before { content: "B"; background: #b7e4c7; }
+        .nav-open-house::before { content: "O"; background: #b7e4c7; }
+        .nav-signins::before { content: "S"; background: #9ca7ff; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255,255,255,.1); color: #fff; }
+        .sidebar-nav a.active { border-left-color: var(--gold); }
+        .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
+        .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); }
+        .page { max-width: 1480px; margin: 0 auto; }
+        .topbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
+        .eyebrow { margin: 0 0 7px; color: #d9922e; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+        h1, h2 { margin: 0; font-family: "Space Grotesk", sans-serif; letter-spacing: -.03em; }
+        h1 { font-size: clamp(30px, 4vw, 44px); }
+        h2 { font-size: 21px; }
+        .subtitle, .panel-intro { color: var(--muted); }
+        .subtitle { margin: 7px 0 0; }
+        .button, button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 8px 12px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; }
+        .button:hover, button:hover { filter: brightness(.93); }
+        button:disabled { cursor: not-allowed; filter: none; opacity: .55; }
+        .button.secondary { background: var(--ink); }
+        .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
+        .workspace { display: grid; grid-template-columns: minmax(320px, .78fr) minmax(0, 1.55fr); gap: 20px; align-items: start; }
+        .panel { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.94); box-shadow: 0 12px 30px rgba(23,32,51,.07); }
+        .panel-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+        .panel-intro { margin: 5px 0 0; font-size: 13px; }
+        .count { color: var(--muted); font-size: 12px; font-weight: 800; white-space: nowrap; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; }
+        .field { min-width: 0; }
+        .wide { grid-column: 1 / -1; }
+        .checkbox-field { display: flex; align-items: center; gap: 9px; margin-top: 10px; }
+        .checkbox-field input { width: 17px; min-height: 17px; margin: 0; accent-color: var(--blue); }
+        .checkbox-field label { margin: 0; font-size: 12px; letter-spacing: 0; text-transform: none; }
+        label { display: block; margin: 11px 0 5px; font-size: 10px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+        input, select, textarea { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; font-size: 13px; }
+        textarea { min-height: 64px; resize: vertical; }
+        input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(37,99,199,.12); }
+        .form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 17px; }
+        .form-actions .button { min-height: 36px; }
+        .event-list { display: grid; gap: 9px; }
+        .event-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 13px; border: 1px solid var(--line); border-left: 4px solid var(--gold); border-radius: 10px; background: var(--paper); }
+        .event-row:hover { border-color: #9ebce7; background: #f4f8ff; }
+        .event-main { min-width: 0; }
+        .event-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+        .event-title { font-size: 15px; font-weight: 800; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #e8f7f1; color: var(--green); font-size: 10px; font-weight: 900; text-transform: capitalize; }
+        .badge.completed { background: #eaf2ff; color: #194c9d; }
+        .badge.cancelled { background: #fff0f1; color: var(--red); }
+        .event-location { margin-top: 4px; color: var(--muted); font-size: 12px; font-weight: 600; }
+        .event-details { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 9px; color: var(--muted); font-size: 12px; }
+        .event-details strong { color: var(--ink); }
+        .schedule-current { display: inline-flex; align-items: center; gap: 6px; }
+        .schedule-current input { width: 15px; min-height: 15px; margin: 0; accent-color: var(--green); }
+        .event-date.future { color: var(--green); font-weight: 800; }
+        .event-notes { margin: 7px 0 0; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+        .event-actions { display: flex; flex-direction: column; gap: 6px; }
+        .small-button { min-height: 31px; padding: 5px 9px; font-size: 11px; }
+        .small-button.delete { background: #fff0f1; color: var(--red); }
+        .empty-state { padding: 38px 16px; border: 1px dashed #aeb9ca; border-radius: 10px; color: var(--muted); text-align: center; font-size: 13px; }
+        @media (max-width: 1050px) { .workspace { grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr); } .panel { padding: 17px; } .event-row { grid-template-columns: 1fr; } .event-actions { flex-direction: row; } }
+        @media (max-width: 768px) { .app-shell { display: block; } .sidebar { position: relative; min-height: auto; padding: 18px; } .brand { display: flex; align-items: center; gap: 12px; padding: 0 0 17px; } .brand-mark { margin: 0; } .brand small { margin-top: 2px; } .sidebar-nav { display: flex; overflow-x: auto; gap: 4px; margin-top: 15px; padding-bottom: 3px; } .sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; } .sidebar-nav a.active { border-bottom-color: var(--gold); } .sidebar-footer { display: none; } .content-shell { padding: 25px 16px; } .workspace { grid-template-columns: 1fr; } }
+        @media (max-width: 500px) { .topbar { align-items: flex-start; flex-direction: column; } .panel { padding: 15px; } .form-grid { grid-template-columns: 1fr; } .wide { grid-column: auto; } .event-details { display: grid; } .form-actions { display: grid; grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
 <div class="app-shell">
-    <aside class="sidebar"><div class="brand"><span class="brand-mark">FH</span><div><strong>The Best Of Florida Homes</strong><small>Lead workspace</small></div></div><nav class="sidebar-nav" aria-label="Main navigation"><a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a><a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a><a class="nav-tasks" href="{{ url_for('tasks') }}">Tasks</a><a class="nav-properties" href="{{ url_for('properties') }}">Properties</a><a class="nav-agents" href="{{ url_for('agents') }}">Agents</a><a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a><a class="active nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a><a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a><a href="{{ url_for('export_csv') }}">Export CSV</a><a href="{{ url_for('logout') }}">Log Out</a></nav><div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div></aside>
-    <main class="content-shell"><div class="page">
-        <header class="topbar"><div><p class="eyebrow">Event studio</p><h1>Open Houses</h1><p class="subtitle">Pair a property with an agent and keep every hosting detail ready for your team.</p></div><div><a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a><button class="button ghost" type="button" id="new-open-house-button">New open house</button></div></header>
-        <div class="workspace">
-            <section class="panel"><div class="panel-header"><div><h2 id="form-title">Plan an open house</h2><p class="panel-intro">Home, hosting agent, date, and event times are required.</p></div></div>
-                <form method="post" id="open-house-form"><input type="hidden" name="open_house_id" id="open-house-id"><div class="form-grid"><div class="field wide"><label for="home-id">Home *</label><select id="home-id" name="home_id" required><option value="">Select a property</option>{% for home in homes %}<option value="{{ home.id }}">{% if home.property_id %}{{ home.property_id }} - {% endif %}{{ home.address }}, {{ home.city }}, {{ home.state }} {{ home.zip_code }}</option>{% endfor %}</select></div><div class="field wide"><label for="agent-id">Hosting Agent *</label><select id="agent-id" name="agent_id" required><option value="">Select an agent</option>{% for agent in agents %}<option value="{{ agent.id }}">{{ agent.first_name }}{% if agent.middle_name %} {{ agent.middle_name }}{% endif %} {{ agent.last_name }}{% if agent.brokerage %} - {{ agent.brokerage }}{% endif %}</option>{% endfor %}</select></div><div class="field wide"><label for="title">Event Title</label><input id="title" name="title" placeholder="Sunday Showcase at Palm Grove"></div><div class="field"><label for="event-date">Hosted Date *</label><input id="event-date" name="event_date" type="date" required></div><div class="field"><label for="status">Status *</label><select id="status" name="status" required><option>Scheduled</option><option>Draft</option><option>Completed</option><option>Cancelled</option></select></div><div class="field"><label for="start-time">Start Time *</label><input id="start-time" name="start_time" type="time" required></div><div class="field"><label for="end-time">End Time *</label><input id="end-time" name="end_time" type="time" required></div><div class="field"><label for="visitor-capacity">Visitor Capacity</label><input id="visitor-capacity" name="visitor_capacity" type="number" min="1" placeholder="25"></div><div class="field"><label for="rsvp-contact">RSVP Contact</label><input id="rsvp-contact" name="rsvp_contact" placeholder="Email or phone"></div><div class="field wide"><label for="public-notes">Public Details</label><textarea id="public-notes" name="public_notes" placeholder="Parking, directions, or guest instructions"></textarea></div><div class="field wide"><label for="internal-notes">Internal Notes</label><textarea id="internal-notes" name="internal_notes" placeholder="Team setup notes, lockbox details, or follow-up reminders"></textarea></div></div><div class="form-actions"><button id="add-open-house-button" type="submit" name="action" value="new">Add Open House</button><button type="submit" name="action" value="update">Update Open House</button><button type="submit" name="action" value="delete" class="delete-button" onclick="return confirm('Delete this open house?');">Delete Open House</button></div></form>
-            </section>
-            <section class="panel"><div class="panel-header"><div><h2>Open house schedule</h2><p class="panel-intro">Select an event to load its current table values into the form.</p></div><span class="count">{{ open_houses|length }} event{% if open_houses|length != 1 %}s{% endif %}</span></div>{% if open_houses %}<div class="event-list">{% for event in open_houses %}<article class="event-card" data-id="{{ event.id }}" data-home-id="{{ event.home_id }}" data-agent-id="{{ event.agent_id }}" data-event-date="{{ event.event_date|e }}" data-start-time="{{ event.start_time|e }}" data-end-time="{{ event.end_time|e }}" data-title="{{ event.title|e }}" data-status="{{ event.status|e }}" data-visitor-capacity="{{ event.visitor_capacity|e }}" data-rsvp-contact="{{ event.rsvp_contact|e }}" data-public-notes="{{ event.public_notes|e }}" data-internal-notes="{{ event.internal_notes|e }}"><div><div class="event-title">{{ event.title or "Open House" }}</div><div class="event-location">{{ event.address or "Property unavailable" }}{% if event.city %}, {{ event.city }}{% endif %}</div><div class="event-details"><div class="detail"><span class="detail-label">Date and Time</span><span class="detail-value">{{ event.event_date }} | {{ event.start_time }} - {{ event.end_time }}</span></div><div class="detail"><span class="detail-label">Hosted By</span><span class="detail-value">{% if event.agent_first_name %}{{ event.agent_first_name }}{% if event.agent_middle_name %} {{ event.agent_middle_name }}{% endif %} {{ event.agent_last_name }}{% else %}Unassigned{% endif %}</span></div><div class="detail"><span class="detail-label">Capacity</span><span class="detail-value">{{ event.visitor_capacity or "Not set" }}</span></div><div class="detail"><span class="detail-label">RSVP</span><span class="detail-value">{{ event.rsvp_contact or "Not set" }}</span></div></div></div><span class="badge{% if event.status|lower == 'completed' %} completed{% elif event.status|lower == 'cancelled' %} cancelled{% endif %}">{{ event.status }}</span></article>{% endfor %}</div>{% else %}<div class="empty-state">No open houses scheduled yet.</div>{% endif %}</section>
+    <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">FH</span><div><strong>The Best Of Florida Homes</strong><small>Lead workspace</small></div></div>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
+            <a class="nav-tasks" href="{{ url_for('tasks') }}">Tasks</a>
+            <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
+            <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
+            <a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
+            <a class="active nav-open-house" href="{{ url_for('generate_open_house') }}">Open Houses</a>
+            <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
+            <a href="{{ url_for('export_csv') }}">Export CSV</a>
+            <a href="{{ url_for('logout') }}">Log Out</a>
+        </nav>
+        <div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div>
+    </aside>
+    <main class="content-shell">
+        <div class="page">
+            <header class="topbar">
+                <div><p class="eyebrow">Event studio</p><h1>Open House Control</h1><p class="subtitle">Schedule property events and keep upcoming dates in view.</p></div>
+                <a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a>
+            </header>
+            <div class="workspace">
+                <section class="panel" aria-labelledby="form-title">
+                    <div class="panel-header"><div><h2 id="form-title">Schedule an open house</h2><p class="panel-intro">Enter the property, host, and event details.</p></div></div>
+                    <form id="open-house-form" method="post" action="{{ url_for('generate_open_house') }}">
+                        <input type="hidden" id="form-action" name="action" value="new">
+                        <input type="hidden" id="open-house-id" name="open_house_id" value="">
+                        <div class="form-grid">
+                            <div class="field wide">
+                                <label for="home-id">Property *</label>
+                                <select id="home-id" name="home_id" required>
+                                    <option value="">Select a property</option>
+                                    {% for home in homes %}
+                                    <option value="{{ home.id }}" data-is-current="{{ home.is_current }}">{% if home.property_id %}{{ home.property_id }} - {% endif %}{{ home.address }}, {{ home.city }}, {{ home.state }} {{ home.zip_code }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="field wide checkbox-field"><input type="hidden" name="is_current" value="0"><input id="is-current" name="is_current" type="checkbox" value="1"><label for="is-current">Set as current home</label></div>
+                            <div class="field wide">
+                                <label for="agent-id">Hosting Agent *</label>
+                                <select id="agent-id" name="agent_id" required>
+                                    <option value="">Select an agent</option>
+                                    {% for agent in agents %}
+                                    <option value="{{ agent.id }}">{{ agent.first_name }}{% if agent.middle_name %} {{ agent.middle_name }}{% endif %} {{ agent.last_name }}{% if agent.brokerage %} - {{ agent.brokerage }}{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="field wide"><label for="title">Event Title</label><input id="title" name="title" placeholder="Sunday Showcase at Palm Grove"></div>
+                            <div class="field"><label for="event-date">Date *</label><input id="event-date" name="event_date" type="date" required></div>
+                            <div class="field"><label for="status">Status</label><select id="status" name="status"><option>Scheduled</option><option>Draft</option><option>Completed</option><option>Cancelled</option></select></div>
+                            <div class="field"><label for="start-time">Start Time *</label><input id="start-time" name="start_time" type="time" required></div>
+                            <div class="field"><label for="end-time">End Time *</label><input id="end-time" name="end_time" type="time" required></div>
+                            <div class="field"><label for="visitor-capacity">Visitor Capacity</label><input id="visitor-capacity" name="visitor_capacity" type="number" min="1" placeholder="25"></div>
+                            <div class="field"><label for="rsvp-contact">RSVP Contact</label><input id="rsvp-contact" name="rsvp_contact" placeholder="Email or phone"></div>
+                            <div class="field wide"><label for="public-notes">Public Notes</label><textarea id="public-notes" name="public_notes"></textarea></div>
+                            <div class="field wide"><label for="internal-notes">Internal Notes</label><textarea id="internal-notes" name="internal_notes"></textarea></div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="button ghost" id="cancel-edit" type="button" hidden>Cancel Edit</button>
+                            <button type="submit" id="submit-button">Save New Open House</button>
+                        </div>
+                    </form>
+                </section>
+                <section class="panel" aria-labelledby="schedule-title">
+                    <div class="panel-header">
+                        <div><h2 id="schedule-title">Open house schedule</h2><p class="panel-intro">Scheduled and completed open-house events.</p></div>
+                        <span class="count">{{ open_houses|length }} event{% if open_houses|length != 1 %}s{% endif %}</span>
+                    </div>
+                    {% if open_houses %}
+                    <div class="event-list">
+                        {% for event in open_houses %}
+                        <article class="event-row" tabindex="0" role="button" aria-label="Load {{ event.title or 'Open House' }} into the schedule form"
+                            data-id="{{ event.id }}" data-home-id="{{ event.home_id }}" data-agent-id="{{ event.agent_id }}"
+                            data-date="{{ event.event_date|e }}" data-start="{{ event.start_time|e }}" data-end="{{ event.end_time|e }}"
+                            data-title="{{ event.title|default('', true)|e }}" data-status="{{ event.status|e }}"
+                            data-capacity="{{ event.visitor_capacity|default('', true)|e }}" data-rsvp="{{ event.rsvp_contact|default('', true)|e }}"
+                            data-public-notes="{{ event.public_notes|default('', true)|e }}" data-internal-notes="{{ event.internal_notes|default('', true)|e }}">
+                            <div class="event-main">
+                                <div class="event-head"><span class="event-title">{{ event.title or "Open House" }}</span><span class="badge{% if event.status|lower == 'completed' %} completed{% elif event.status|lower == 'cancelled' %} cancelled{% endif %}">{{ event.status }}</span><span class="schedule-current"><input type="checkbox" aria-label="Current home" disabled {% if event.is_current %}checked{% endif %}><strong>Current home</strong></span></div>
+                                <div class="event-location">{{ event.address or "Property unavailable" }}{% if event.city %}, {{ event.city }}{% endif %}{% if event.state %}, {{ event.state }}{% endif %} {{ event.zip_code or "" }}</div>
+                                <div class="event-details">
+                                    <span><strong>Date:</strong> <time class="event-date" data-event-datetime="{{ event.event_date }}T{{ event.start_time }}">{{ event.event_date }}</time></span>
+                                    <span><strong>Time:</strong> {{ event.start_time }} - {{ event.end_time }}</span>
+                                    <span><strong>Host:</strong> {% if event.agent_first_name %}{{ event.agent_first_name }}{% if event.agent_middle_name %} {{ event.agent_middle_name }}{% endif %} {{ event.agent_last_name }}{% else %}Unassigned{% endif %}</span>
+                                    {% if event.visitor_capacity %}<span><strong>Capacity:</strong> {{ event.visitor_capacity }}</span>{% endif %}
+                                    {% if event.rsvp_contact %}<span><strong>RSVP:</strong> {{ event.rsvp_contact }}</span>{% endif %}
+                                </div>
+                                {% if event.public_notes %}<p class="event-notes">{{ event.public_notes }}</p>{% endif %}
+                            </div>
+                            <div class="event-actions">
+                                <button class="small-button delete" type="button" data-delete-id="{{ event.id }}">Delete</button>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">No open houses have been added yet.</div>
+                    {% endif %}
+                </section>
+            </div>
+            <form id="delete-form" method="post" action="{{ url_for('generate_open_house') }}" hidden>
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="open_house_id" id="delete-open-house-id">
+            </form>
         </div>
-    </div></main>
+    </main>
 </div>
 <script>
     const form = document.getElementById("open-house-form");
-    const newButton = document.getElementById("new-open-house-button");
-    const addButton = document.getElementById("add-open-house-button");
+    const formAction = document.getElementById("form-action");
+    const openHouseId = document.getElementById("open-house-id");
     const formTitle = document.getElementById("form-title");
-    const fields = ["home_id", "agent_id", "event_date", "start_time", "end_time", "title", "status", "visitor_capacity", "rsvp_contact", "public_notes", "internal_notes"];
-    function resetOpenHouseForm() { form.reset(); document.getElementById("open-house-id").value = ""; addButton.disabled = false; formTitle.textContent = "Plan an open house"; document.querySelectorAll(".event-card").forEach((card) => card.classList.remove("selected-open-house")); document.getElementById("home-id").focus(); }
-    newButton.addEventListener("click", resetOpenHouseForm);
-    document.querySelectorAll(".event-card").forEach((card) => { card.addEventListener("click", () => { document.getElementById("open-house-id").value = card.dataset.id; fields.forEach((name) => { form.elements[name].value = card.getAttribute(`data-${name.replaceAll("_", "-")}`) || ""; }); addButton.disabled = true; formTitle.textContent = "Update open house"; document.querySelectorAll(".event-card").forEach((item) => item.classList.remove("selected-open-house")); card.classList.add("selected-open-house"); form.scrollIntoView({ behavior: "smooth", block: "start" }); }); });
-</script>
-<script>
-    document.querySelectorAll(".event-card").forEach((card) => {
-        const deleteForm = document.createElement("form");
-        deleteForm.method = "post";
-        deleteForm.className = "event-actions";
-        deleteForm.addEventListener("click", (event) => event.stopPropagation());
-        deleteForm.addEventListener("submit", (event) => {
-            if (!confirm("Delete this open house?")) event.preventDefault();
+    const submitButton = document.getElementById("submit-button");
+    const cancelEdit = document.getElementById("cancel-edit");
+    const homeSelect = document.getElementById("home-id");
+    const currentHomeCheckbox = document.getElementById("is-current");
+    let originalValues = null;
+
+    function getEditableValues() {
+        return [...form.elements]
+            .filter((element) => element.name && !["action", "open_house_id"].includes(element.name))
+            .reduce((values, element) => {
+                if (element.name === "is_current") {
+                    if (element.type === "checkbox") values.is_current = element.checked ? "1" : "0";
+                } else {
+                    values[element.name] = element.value;
+                }
+                return values;
+            }, {});
+    }
+
+    function updateSaveButton() {
+        submitButton.disabled = formAction.value === "update" &&
+            JSON.stringify(getEditableValues()) === JSON.stringify(originalValues);
+    }
+
+    document.querySelectorAll(".event-date[data-event-datetime]").forEach((dateElement) => {
+        const eventDateTime = new Date(dateElement.dataset.eventDatetime);
+        if (!Number.isNaN(eventDateTime.getTime()) && eventDateTime > new Date()) {
+            dateElement.classList.add("future");
+        }
+    });
+
+    function resetOpenHouseForm() {
+        form.reset();
+        formAction.value = "new";
+        openHouseId.value = "";
+        formTitle.textContent = "Schedule an open house";
+        submitButton.textContent = "Save New Open House";
+        submitButton.disabled = false;
+        originalValues = null;
+        cancelEdit.hidden = true;
+    }
+
+    homeSelect.addEventListener("change", () => {
+        const selectedOption = homeSelect.selectedOptions[0];
+        currentHomeCheckbox.checked = selectedOption?.dataset.isCurrent === "1";
+    });
+
+    function populateOpenHouseForm(button) {
+        const values = {
+            "home-id": button.dataset.homeId,
+            "agent-id": button.dataset.agentId,
+            "event-date": button.dataset.date,
+            "start-time": button.dataset.start,
+            "end-time": button.dataset.end,
+            title: button.dataset.title,
+            status: button.dataset.status,
+            "visitor-capacity": button.dataset.capacity,
+            "rsvp-contact": button.dataset.rsvp,
+            "public-notes": button.dataset.publicNotes,
+            "internal-notes": button.dataset.internalNotes
+        };
+        Object.entries(values).forEach(([id, value]) => {
+            document.getElementById(id).value = value || "";
         });
+        currentHomeCheckbox.checked = homeSelect.selectedOptions[0]?.dataset.isCurrent === "1";
+        formAction.value = "update";
+        openHouseId.value = button.dataset.id;
+        formTitle.textContent = "Edit open house";
+        submitButton.textContent = "Save Changes";
+        originalValues = getEditableValues();
+        submitButton.disabled = true;
+        cancelEdit.hidden = false;
+        document.getElementById("home-id").focus();
+        form.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 
-        const eventId = document.createElement("input");
-        eventId.type = "hidden";
-        eventId.name = "open_house_id";
-        eventId.value = card.dataset.id;
+    form.addEventListener("input", updateSaveButton);
+    form.addEventListener("change", updateSaveButton);
 
-        const action = document.createElement("input");
-        action.type = "hidden";
-        action.name = "action";
-        action.value = "delete";
+    document.querySelectorAll(".event-row").forEach((row) => {
+        row.addEventListener("click", (event) => {
+            if (event.target.closest("button")) return;
+            populateOpenHouseForm(row);
+        });
+        row.addEventListener("keydown", (event) => {
+            if (event.target !== row || (event.key !== "Enter" && event.key !== " ")) return;
+            event.preventDefault();
+            populateOpenHouseForm(row);
+        });
+    });
 
-        const deleteButton = document.createElement("button");
-        deleteButton.type = "submit";
-        deleteButton.className = "event-delete-button";
-        deleteButton.textContent = "Delete";
-
-        deleteForm.append(eventId, action, deleteButton);
-        card.querySelector(".event-details").after(deleteForm);
+    cancelEdit.addEventListener("click", resetOpenHouseForm);
+    document.querySelectorAll("[data-delete-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+            if (!window.confirm("Delete this scheduled open house?")) return;
+            document.getElementById("delete-open-house-id").value = button.dataset.deleteId;
+            document.getElementById("delete-form").submit();
+        });
     });
 </script>
 </body>

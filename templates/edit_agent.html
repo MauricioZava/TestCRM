@@ -8,7 +8,7 @@
         :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; }
         * { box-sizing: border-box; }
         body { min-height: 100vh; margin: 0; padding: 24px 14px; color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
-        .container { width: 100%; max-width: 620px; margin: 0 auto; padding: clamp(20px, 5vw, 34px); border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.95); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
+        .container { width: 100%; max-width: 900px; margin: 0 auto; padding: clamp(20px, 5vw, 34px); border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.95); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
         h1 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; font-size: clamp(28px, 7vw, 40px); letter-spacing: -.03em; }
         .intro { margin: 8px 0 22px; color: var(--muted); line-height: 1.5; }
         label { display: block; margin-top: 15px; color: var(--ink); font-size: 13px; font-weight: 800; }
@@ -32,6 +32,16 @@
         <form method="post" action="{% if is_new %}{{ url_for('create_agent') }}{% endif %}">
             <div class="row-2">
                 <div>
+                    <label for="agent_id">Agent ID</label>
+                    <input id="agent_id" value="{{ agent.id or '' }}" placeholder="Assigned on save" readonly>
+                </div>
+                <div>
+                    <label for="status">Status</label>
+                    <input id="status" type="text" name="status" value="{{ agent.status or 'Active' }}">
+                </div>
+            </div>
+            <div class="row-2">
+                <div>
                     <label for="first_name">First Name</label>
                     <input id="first_name" type="text" name="first_name" value="{{ agent.first_name }}" required>
                 </div>
@@ -53,36 +63,81 @@
                     <label for="phone">Phone</label>
                     <input id="phone" type="tel" name="phone" value="{{ agent.phone }}" placeholder="###-###-####" inputmode="numeric" autocomplete="tel-national" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" title="Enter a phone number as ###-###-####">
                 </div>
+                <div>
+                    <label for="mobile_phone">Mobile Phone</label>
+                    <input id="mobile_phone" type="tel" name="mobile_phone" value="{{ agent.mobile_phone or '' }}">
+                </div>
+                <div>
+                    <label for="office_phone">Office Phone</label>
+                    <input id="office_phone" type="tel" name="office_phone" value="{{ agent.office_phone or '' }}">
+                </div>
             </div>
 
             <div class="row-2">
                 <div>
-                    <label for="broker-selector">Broker</label>
-                    <select id="broker-selector">
+                    <label for="broker_id">Broker ID</label>
+                    <select id="broker_id" name="broker_id">
                         <option value="">Select a broker</option>
                         {% for broker in brokers %}
-                        <option value="{{ broker.company_name|e }}" {% if agent.brokerage == broker.company_name %}selected{% endif %}>{{ broker.company_name }}</option>
+                        <option value="{{ broker.id }}" {% if agent.broker_id == broker.id %}selected{% endif %}>{{ broker.company_name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div>
-                    <label for="brokerage">Brokerage</label>
-                    <input id="brokerage" type="text" name="brokerage" value="{{ agent.brokerage }}">
+                    <label for="office_id">Office ID</label>
+                    <input id="office_id" type="number" name="office_id" min="1" value="{{ agent.office_id if agent.office_id is not none else '' }}">
                 </div>
                 <div>
-                    <label for="website">Website</label>
-                    <input id="website" type="url" name="website" value="{{ agent.website }}">
+                    <label for="team_id">Team ID</label>
+                    <input id="team_id" type="number" name="team_id" min="1" value="{{ agent.team_id if agent.team_id is not none else '' }}">
+                </div>
+            </div>
+
+            <input type="hidden" id="brokerage" name="brokerage" value="{{ agent.brokerage or '' }}">
+
+            <div class="row-2">
+                <div>
+                    <label for="license_number">License Number</label>
+                    <input id="license_number" type="text" name="license_number" value="{{ agent.license_number or '' }}">
+                </div>
+                <div>
+                    <label for="license_state">License State</label>
+                    <input id="license_state" type="text" name="license_state" value="{{ agent.license_state or '' }}">
+                </div>
+                <div>
+                    <label for="license_expiration_date">License Expiration Date</label>
+                    <input id="license_expiration_date" type="date" name="license_expiration_date" value="{{ agent.license_expiration_date or '' }}">
+                </div>
+                <div>
+                    <label for="mls_id">MLS ID</label>
+                    <input id="mls_id" type="text" name="mls_id" value="{{ agent.mls_id or '' }}">
+                </div>
+                <div>
+                    <label for="nrds_id">NRDS ID</label>
+                    <input id="nrds_id" type="text" name="nrds_id" value="{{ agent.nrds_id or '' }}">
+                </div>
+                <div>
+                    <label for="agent_type">Agent Type</label>
+                    <input id="agent_type" type="text" name="agent_type" value="{{ agent.agent_type or '' }}">
+                </div>
+                <div>
+                    <label for="years_experience">Years Experience</label>
+                    <input id="years_experience" type="number" name="years_experience" min="0" value="{{ agent.years_experience if agent.years_experience is not none else '' }}">
+                </div>
+                <div>
+                    <label for="preferred_contact_method">Preferred Contact Method</label>
+                    <input id="preferred_contact_method" type="text" name="preferred_contact_method" value="{{ agent.preferred_contact_method or '' }}">
                 </div>
             </div>
 
             <div class="row-2">
                 <div>
-                    <label for="license_number">License Number</label>
-                    <input id="license_number" type="text" name="license_number" value="{{ agent.license_number }}">
+                    <label for="created_at">Created At</label>
+                    <input id="created_at" value="{{ agent.created_at or '' }}" placeholder="Set on save" readonly>
                 </div>
                 <div>
-                    <label for="license_state">License State</label>
-                    <input id="license_state" type="text" name="license_state" value="{{ agent.license_state }}">
+                    <label for="updated_at">Updated At</label>
+                    <input id="updated_at" value="{{ agent.updated_at or '' }}" placeholder="Set on save" readonly>
                 </div>
             </div>
 
@@ -107,6 +162,15 @@
             <label for="specialties">Specialties</label>
             <input id="specialties" type="text" name="specialties" value="{{ agent.specialties }}" placeholder="Residential, luxury, first-time buyers">
 
+            <label for="agent_tags">Agent Tags</label>
+            <input id="agent_tags" type="text" name="agent_tags" value="{{ agent.agent_tags or '' }}">
+
+            <label for="social_media_links">Social Media Links</label>
+            <textarea id="social_media_links" name="social_media_links">{{ agent.social_media_links or '' }}</textarea>
+
+            <label for="profile_photo_url">Profile Photo URL</label>
+            <input id="profile_photo_url" type="url" name="profile_photo_url" value="{{ agent.profile_photo_url or '' }}">
+
             <label for="notes">Notes</label>
             <textarea id="notes" name="notes" rows="5">{{ agent.notes }}</textarea>
 
@@ -118,7 +182,7 @@
     </main>
     <script>
         const phoneInput = document.getElementById("phone");
-        const brokerSelector = document.getElementById("broker-selector");
+        const brokerSelector = document.getElementById("broker_id");
         const brokerageInput = document.getElementById("brokerage");
 
         function formatPhone(value) {
@@ -134,7 +198,7 @@
         });
 
         brokerSelector.addEventListener("change", () => {
-            if (brokerSelector.value) brokerageInput.value = brokerSelector.value;
+            brokerageInput.value = brokerSelector.selectedOptions[0]?.textContent.trim() || "";
         });
     </script>
 </body>

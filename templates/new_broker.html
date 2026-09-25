@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ "Edit Broker" if is_edit else "New Broker" }} | Lead Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #172033; --muted: #66748a; --canvas: #e8edf3; --paper: #fffdf8; --line: #d9e1ea; --blue: #2563c7; --gold: #ffb547; }
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        .app-shell { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+        .sidebar { position: sticky; top: 0; display: flex; flex-direction: column; min-height: 100vh; padding: 28px 18px; background: var(--ink); color: #fff; }
+        .brand { padding: 0 14px 30px; border-bottom: 1px solid rgba(255,255,255,.12); }
+        .brand-mark { display: inline-grid; place-items: center; width: 42px; height: 42px; margin-bottom: 14px; border-radius: 12px; background: var(--gold); color: var(--ink); font-size: 15px; font-weight: 800; }
+        .brand strong, .brand small { display: block; }
+        .brand strong { font-size: 20px; }
+        .brand small { margin-top: 5px; color: #aeb9ca; font-size: 12px; }
+        .sidebar-nav { display: grid; gap: 9px; margin-top: 28px; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; }
+        .sidebar-nav a::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; color: var(--ink); font-size: 13px; font-weight: 800; }
+        .nav-dashboard::before { content: "D"; background: #ffb547; }.nav-contacts::before { content: "C"; background: #f28f8f; }.nav-tasks::before { content: "T"; background: #c1ccd9; }.nav-properties::before { content: "P"; background: #6ed3cf; }.nav-agents::before { content: "A"; background: #f6c177; }.nav-brokers::before { content: "B"; background: #b7e4c7; }.nav-open-house::before { content: "O"; background: #c9b6f3; }.nav-signins::before { content: "S"; background: #9ca7ff; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255,255,255,.1); color: #fff; transform: translateX(3px); }
+        .sidebar-nav a.active { border-left-color: var(--gold); }
+        .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
+        .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); }
+        .page { max-width: 1100px; margin: 0 auto; }
+        .topbar { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 30px; }
+        .eyebrow { margin: 0 0 7px; color: #d9922e; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+        h1, h2 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; letter-spacing: -.03em; }
+        h1 { font-size: clamp(30px, 4vw, 46px); }
+        h2 { font-size: 21px; }
+        .subtitle, .panel-intro { margin: 8px 0 0; color: var(--muted); }
+        .panel-intro { font-size: 13px; }
+        .top-actions, .form-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+        .button, button { min-height: 40px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; }
+        .button:hover, button:hover { filter: brightness(.92); }
+        .button.secondary { background: var(--ink); }
+        .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
+        .panel { min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
+        .panel-header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
+        .field { min-width: 0; }.wide { grid-column: 1 / -1; }
+        .form-section { grid-column: 1 / -1; padding: 6px 0 18px; border-bottom: 1px solid var(--line); }
+        .form-section h3 { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        input, textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; }
+        input[type="checkbox"] { width: 18px; min-height: 18px; margin: 11px 0; padding: 0; accent-color: var(--blue); }
+        input[readonly] { background: #eef2f6; color: var(--muted); }
+        textarea { min-height: 82px; resize: vertical; }
+        input:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .form-actions { margin-top: 20px; }
+        @media (max-width: 768px) { .app-shell { display: block; }.sidebar { position: relative; min-height: auto; padding: 18px; }.brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; }.brand-mark { margin: 0; }.brand small { margin-top: 2px; }.sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; }.sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; }.sidebar-nav a.active { border-bottom-color: var(--gold); }.sidebar-footer { display: none; }.content-shell { padding: 28px 16px; } }
+        @media (max-width: 600px) { .topbar { align-items: flex-start; flex-direction: column; }.form-grid { grid-template-columns: 1fr; }.wide { grid-column: auto; }.panel { padding: 18px; } }
+    </style>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar">
+        <div class="brand"><span class="brand-mark">FH</span><div><strong>The Best Of Florida Homes</strong><small>Lead workspace</small></div></div>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+            <a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
+            <a class="nav-tasks" href="{{ url_for('tasks') }}">Tasks</a>
+            <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
+            <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
+            <a class="active nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
+            <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
+            <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
+            <a href="{{ url_for('export_csv') }}">Export CSV</a>
+            <a href="{{ url_for('logout') }}">Log Out</a>
+        </nav>
+        <div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div>
+    </aside>
+    <main class="content-shell">
+        <div class="page">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Partner directory</p>
+                    <h1>{{ "Edit Broker" if is_edit else "New Broker" }}</h1>
+                    <p class="subtitle">{{ "Update broker details." if is_edit else "Add a brokerage and its primary contact." }}</p>
+                </div>
+                <nav class="top-actions" aria-label="Broker navigation">
+                    <a class="button ghost" href="{{ url_for('brokers') }}">Back to Brokers</a>
+                    <a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a>
+                </nav>
+            </header>
+            <section class="panel">
+                <div class="panel-header"><div><h2>Broker profile</h2><p class="panel-intro">Brokerage name is required. Record ID and timestamps are system managed.</p></div></div>
+                <form method="post" class="broker-form">
+                    <div class="form-grid">
+                        <div class="field"><label for="broker-id">Broker ID</label><input id="broker-id" value="{{ broker.id or '' }}" placeholder="Assigned on save" readonly></div>
+                        <div class="field wide"><label for="company-name">Brokerage Name *</label><input id="company-name" name="company_name" value="{{ broker.company_name or '' }}" required></div>
+                        <section class="form-section" aria-labelledby="contact-information-title">
+                            <h3 id="contact-information-title">Contact Information</h3>
+                            <div class="form-grid">
+                                <div class="field"><label for="first-name">First Name</label><input id="first-name" name="first_name" value="{{ broker.first_name or '' }}"></div>
+                                <div class="field"><label for="last-name">Last Name</label><input id="last-name" name="last_name" value="{{ broker.last_name or '' }}"></div>
+                                <div class="field wide"><label for="contact-name">Primary Contact</label><input id="contact-name" name="contact_name" value="{{ broker.contact_name or '' }}"></div>
+                                <div class="field"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" value="{{ broker.phone or '' }}"></div>
+                                <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" value="{{ broker.email or '' }}"></div>
+                            </div>
+                        </section>
+                        <section class="form-section" aria-labelledby="office-information-title">
+                            <h3 id="office-information-title">Office Information</h3>
+                            <div class="form-grid">
+                                <div class="field wide"><label for="office-address">Office Address</label><input id="office-address" name="office_address" value="{{ broker.office_address or '' }}"></div>
+                                <div class="field"><label for="city">City</label><input id="city" name="city" value="{{ broker.city or '' }}"></div>
+                                <div class="field"><label for="state">State</label><input id="state" name="state" value="{{ broker.state or '' }}"></div>
+                                <div class="field"><label for="zip-code">Zip Code</label><input id="zip-code" name="zip_code" value="{{ broker.zip_code or '' }}"></div>
+                                <div class="field"><label for="website">Website</label><input id="website" name="website" type="url" value="{{ broker.website or '' }}"></div>
+                            </div>
+                        </section>
+                        <div class="field"><label for="license-number">License Number</label><input id="license-number" name="license_number" value="{{ broker.license_number or '' }}"></div>
+                        <div class="field"><label for="license-state">License State</label><input id="license-state" name="license_state" value="{{ broker.license_state or '' }}"></div>
+                        <div class="field"><label for="license-expiration-date">License Expiration Date</label><input id="license-expiration-date" name="license_expiration_date" type="date" value="{{ broker.license_expiration_date or '' }}"></div>
+                        <div class="field"><label for="mls-id">MLS ID</label><input id="mls-id" name="mls_id" value="{{ broker.mls_id or '' }}"></div>
+                        <div class="field"><label for="nrds-id">NRDS ID</label><input id="nrds-id" name="nrds_id" value="{{ broker.nrds_id or '' }}"></div>
+                        <div class="field"><label for="broker-type">Broker Type</label><input id="broker-type" name="broker_type" value="{{ broker.broker_type or '' }}"></div>
+                        <div class="field"><label for="years-experience">Years Experience</label><input id="years-experience" name="years_experience" type="number" min="0" value="{{ broker.years_experience if broker.years_experience is not none else '' }}"></div>
+                        <div class="field"><label for="office-id">Office ID</label><input id="office-id" name="office_id" type="number" min="1" value="{{ broker.office_id if broker.office_id is not none else '' }}"></div>
+                        <div class="field"><label for="is-primary-broker">Primary Broker</label><input id="is-primary-broker" name="is_primary_broker" type="checkbox" value="1"{% if broker.is_primary_broker == 1 or broker.is_primary_broker == '1' %} checked{% endif %}></div>
+                        <div class="field"><label for="status">Status</label><input id="status" name="status" value="{{ broker.status or 'Active' }}"></div>
+                        <div class="field"><label for="preferred-contact-method">Preferred Contact Method</label><input id="preferred-contact-method" name="preferred_contact_method" value="{{ broker.preferred_contact_method or '' }}"></div>
+                        <div class="field"><label for="tags">Tags</label><input id="tags" name="tags" value="{{ broker.tags or '' }}"></div>
+                        <div class="field"><label for="created-at">Created At</label><input id="created-at" value="{{ broker.created_at or '' }}" placeholder="Set on save" readonly></div>
+                        <div class="field"><label for="updated-at">Updated At</label><input id="updated-at" value="{{ broker.updated_at or '' }}" placeholder="Set on save" readonly></div>
+                        <div class="field wide"><label for="notes">Notes</label><textarea id="notes" name="notes">{{ broker.notes or '' }}</textarea></div>
+                        <div class="field wide"><label for="social-media-links">Social Media Links</label><textarea id="social-media-links" name="social_media_links">{{ broker.social_media_links or '' }}</textarea></div>
+                        <div class="field wide"><label for="profile-photo-url">Profile Photo URL</label><input id="profile-photo-url" name="profile_photo_url" type="url" value="{{ broker.profile_photo_url or '' }}"></div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit">{{ "Save Changes" if is_edit else "Add Broker" }}</button>
+                        <a class="button ghost" href="{{ url_for('brokers') }}">Cancel</a>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+</div>
+</body>
+</html>

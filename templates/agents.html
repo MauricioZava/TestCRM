@@ -62,6 +62,21 @@
         .small-button.edit { background: #f6c177; color: var(--ink); }
         .small-button.delete { background: #fff0f1; color: var(--red); }
         .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
+        .agent-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 16px; border: 1px solid var(--line); border-left: 4px solid #f6c177; border-radius: 11px; background: var(--paper); }
+        .agent-card:hover, .agent-card.search-match { border-color: #9ebce7; background: #f4f8ff; }
+        .agent-card.search-current { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,199,.14); }
+        .agent-list { display: grid; gap: 10px; }
+        .agent-name { color: var(--ink); font-size: 16px; font-weight: 800; }
+        .agent-contact { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+        .agent-details { display: grid; grid-template-columns: repeat(3, minmax(140px, 1fr)); gap: 8px 16px; margin-top: 12px; }
+        .agent-detail-label { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .agent-detail-value { overflow-wrap: anywhere; color: var(--ink); font-size: 12px; font-weight: 600; }
+        .agent-name mark, .agent-contact mark, .agent-email mark { padding: 1px 2px; border-radius: 3px; background: #ffcf7a; color: var(--ink); }
+        .agent-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+        .agent-actions form { margin: 0; }
+        .agent-actions .button, .agent-actions button { min-height: 32px; padding: 6px 9px; font-size: 12px; }
+        .agent-actions .delete-action { background: #fff0f1; color: var(--red); }
+        @media (max-width: 600px) { .agent-card { grid-template-columns: 1fr; }.agent-details { grid-template-columns: 1fr; } }
         @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } }
         @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-sections { grid-template-columns: 1fr; } .meta-row { grid-template-columns: 82px minmax(0, 1fr); } .contact-actions { justify-content: flex-start; } }
         body { min-height: 100vh; padding: 0; }
@@ -125,76 +140,90 @@
                     <label for="agent-search">Find an agent</label>
                     <div class="search-row">
                         <div class="search-input-wrap">
-                            <input id="agent-search" type="search" placeholder="Search names, emails, brokerage..." autocomplete="off" aria-describedby="search-count">
+                            <input id="agent-search" type="search" placeholder="Search agent profile..." autocomplete="off" aria-describedby="search-count">
                             <button class="search-clear" id="search-clear" type="button" aria-label="Clear agent search" hidden>&times;</button>
                         </div>
-                        <a class="button" href="{{ url_for('create_agent') }}">New agent</a>
                     </div>
                     <span class="search-count" id="search-count" aria-live="polite"></span>
                 </div>
                 <div class="title-block">
                     <p class="eyebrow">Lead workspace</p>
                     <h1>Agents</h1>
+                    <p class="subtitle">Agent directory and profile details.</p>
                 </div>
-                <nav class="top-actions" aria-label="Agents navigation">
+                <nav class="top-actions" aria-label="Agent actions">
+                    <a class="button" href="{{ url_for('create_agent') }}">New Agent</a>
                     <a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a>
-                    <a class="button ghost" href="{{ url_for('tasks') }}">Tasks</a>
                 </nav>
             </header>
 
             <div class="workspace">
                 <section class="panel" aria-labelledby="agent-list-title">
                     <div class="panel-header">
-                        <div><h2 id="agent-list-title">Your agents</h2><p class="panel-intro">Manage team directory details in the same workspace layout as contacts.</p></div>
-                        <div class="top-actions"><span class="count">{{ agents|length }} agent{% if agents|length != 1 %}s{% endif %}</span></div>
+                        <div><h2 id="agent-list-title">Your agents</h2><p class="panel-intro">Saved agent profiles and contact details.</p></div>
+                        <span class="count">{{ agents|length }} agent{% if agents|length != 1 %}s{% endif %}</span>
                     </div>
                     {% if agents %}
-                    <div class="contact-list">
+                    <div class="agent-list">
                         {% for agent in agents %}
-                        <article class="contact-row" data-search="{{ [agent.display_name, agent.email, agent.phone, agent.brokerage, agent.license_number, agent.city, agent.state, agent.specialties]|join(' ')|lower|e }}">
-                            <div class="contact-main">
-                                <div class="contact-head">
-                                    <span class="contact-name">{{ agent.display_name }}</span>
-                                    <span class="badge">Agent</span>
+                        <article class="agent-card" data-search="{{ agent.values()|select|join(' ')|lower|e }}">
+                            <div>
+                                <div class="agent-name">{{ agent.display_name }}</div>
+                                <div class="agent-contact">{{ agent.brokerage or "No brokerage set" }}</div>
+                                <div class="agent-details">
+                                    {% set profile_fields = [
+                                        ("Agent ID", agent.id),
+                                        ("First Name", agent.first_name),
+                                        ("Middle Name", agent.middle_name),
+                                        ("Last Name", agent.last_name),
+                                        ("Email", agent.email),
+                                        ("Phone", agent.phone),
+                                        ("Mobile Phone", agent.mobile_phone),
+                                        ("Office Phone", agent.office_phone),
+                                        ("Broker ID", agent.broker_id),
+                                        ("Office ID", agent.office_id),
+                                        ("Team ID", agent.team_id),
+                                        ("Brokerage", agent.brokerage),
+                                        ("License Number", agent.license_number),
+                                        ("License State", agent.license_state),
+                                        ("License Expiration Date", agent.license_expiration_date),
+                                        ("MLS ID", agent.mls_id),
+                                        ("NRDS ID", agent.nrds_id),
+                                        ("Agent Type", agent.agent_type),
+                                        ("Years Experience", agent.years_experience),
+                                        ("Status", agent.status),
+                                        ("Preferred Contact Method", agent.preferred_contact_method),
+                                        ("Agent Tags", agent.agent_tags),
+                                        ("Social Media Links", agent.social_media_links),
+                                        ("Profile Photo URL", agent.profile_photo_url),
+                                        ("Office Address", agent.office_address),
+                                        ("City", agent.city),
+                                        ("State", agent.state),
+                                        ("Zip Code", agent.zip_code),
+                                        ("Website", agent.website),
+                                        ("Specialties", agent.specialties),
+                                        ("Notes", agent.notes),
+                                        ("Created At", agent.created_at),
+                                        ("Updated At", agent.updated_at)
+                                    ] %}
+                                    {% for label, value in profile_fields %}
+                                    <div><span class="agent-detail-label">{{ label }}</span><span class="agent-detail-value{% if label == 'Email' %} agent-email{% endif %}">{{ value if value not in (none, '') else "Not set" }}</span></div>
+                                    {% endfor %}
                                 </div>
-                                <div class="contact-sections">
-                                    <section class="meta-group" aria-label="Contact details">
-                                        <p class="meta-title">Contact</p>
-                                        <div class="meta-row"><span class="meta-label">Email</span><span class="meta-value contact-email">{{ agent.email or "No email" }}</span></div>
-                                        <div class="meta-row"><span class="meta-label">Phone</span><span class="meta-value">{{ agent.phone or "No phone" }}</span></div>
-                                        <div class="meta-row"><span class="meta-label">Website</span><span class="meta-value">{{ agent.website or "Not set" }}</span></div>
-                                        <div class="meta-row"><span class="meta-label">Brokerage</span><span class="meta-value">{{ agent.brokerage or "Not set" }}</span></div>
-                                        <div class="meta-row"><span class="meta-label">Office</span><span class="meta-value">{{ agent.office_address or "Not set" }}</span></div>
-                                        <div class="meta-row location-row">
-                                            <div class="location-item"><span class="meta-label">City</span><div class="meta-value">{{ agent.city or "Not set" }}</div></div>
-                                            <div class="location-item"><span class="meta-label">State</span><div class="meta-value">{{ agent.state or "Not set" }}</div></div>
-                                            <div class="location-item"><span class="meta-label">Zip</span><div class="meta-value">{{ agent.zip_code or "Not set" }}</div></div>
-                                        </div>
-                                    </section>
-                                    <section class="meta-group" aria-label="License details">
-                                        <p class="meta-title">License</p>
-                                        <div class="meta-row"><span class="meta-label">Number</span><span class="meta-value">{{ agent.license_number or "Not set" }}</span></div>
-                                        <div class="meta-row"><span class="meta-label">License State</span><span class="meta-value">{{ agent.license_state or "Not set" }}</span></div>
-                                    </section>
-                                    <section class="meta-group" aria-label="Coverage and notes">
-                                        <p class="meta-title">Coverage</p>
-                                        <div class="meta-row"><span class="meta-label">Specialties</span><span class="meta-value">{{ agent.specialties or "Not set" }}</span></div>
-                                        <div class="meta-row"><span class="meta-label">Notes</span><span class="meta-value">{{ agent.notes or "Not set" }}</span></div>
-                                    </section>
-                                </div>
-                                <div class="contact-actions">
-                                    <a class="button small-button edit" href="{{ url_for('edit_agent', agent_id=agent.id) }}">Edit Agent</a>
+                                <div class="agent-actions">
+                                    <a class="button ghost" href="{{ url_for('edit_agent', agent_id=agent.id) }}">Edit Agent</a>
                                     <form method="post" action="{{ url_for('remove_agent', agent_id=agent.id) }}" onsubmit="return confirm('Delete this agent?');">
-                                        <button class="small-button delete" type="submit">Delete</button>
+                                        <button class="delete-action" type="submit">Delete</button>
                                     </form>
                                 </div>
                             </div>
-                            <span class="score">A</span>
+                            <span class="badge">Agent</span>
                         </article>
                         {% endfor %}
                     </div>
+                    <div class="empty-state" id="agent-search-empty" hidden>No agents match that search.</div>
                     {% else %}
-                    <div class="empty-state">No agents yet.</div>
+                    <div class="empty-state">No agents yet. Add your first agent to get started.</div>
                     {% endif %}
                 </section>
             </div>
@@ -205,9 +234,10 @@
     const searchInput = document.getElementById("agent-search");
     const searchClear = document.getElementById("search-clear");
     const searchCount = document.getElementById("search-count");
-    const agentRows = [...document.querySelectorAll(".contact-row")];
+    const agentRows = [...document.querySelectorAll(".agent-card")];
     let matchingRows = [];
     let activeMatch = -1;
+    const searchEmpty = document.getElementById("agent-search-empty");
 
     function escapeHtml(value) {
         return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
@@ -215,7 +245,7 @@
 
     function highlightMatchingFields(row, query) {
         const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        row.querySelectorAll(".contact-name, .contact-email").forEach((field) => {
+        row.querySelectorAll(".agent-name, .agent-contact, .agent-email").forEach((field) => {
             const originalValue = field.dataset.originalValue || field.textContent;
             field.dataset.originalValue = originalValue;
             const fieldMatches = query && new RegExp(escapedQuery, "i").test(originalValue);
@@ -240,6 +270,7 @@
         if (activeMatch >= 0) matchingRows[activeMatch].classList.add("search-current");
         searchClear.hidden = !query;
         searchCount.textContent = query ? `${matchingRows.length} match${matchingRows.length === 1 ? "" : "es"}${matchingRows.length > 1 ? " · Tab for next" : ""}` : "";
+        if (searchEmpty) searchEmpty.hidden = matchingRows.length > 0;
     }
 
     searchInput.addEventListener("input", () => {

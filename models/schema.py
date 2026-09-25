@@ -86,27 +86,75 @@ def init_agents_table():
             last_name TEXT NOT NULL,
             email TEXT,
             phone TEXT,
+            mobile_phone TEXT,
+            office_phone TEXT,
+            broker_id INTEGER,
+            office_id INTEGER,
+            team_id INTEGER,
             brokerage TEXT,
             license_number TEXT,
             license_state TEXT,
+            license_expiration_date TEXT,
+            mls_id TEXT,
+            nrds_id TEXT,
+            agent_type TEXT,
+            years_experience INTEGER,
+            status TEXT,
+            preferred_contact_method TEXT,
+            agent_tags TEXT,
+            social_media_links TEXT,
+            profile_photo_url TEXT,
             office_address TEXT,
             city TEXT,
             state TEXT,
             zip_code TEXT,
             website TEXT,
             specialties TEXT,
-            notes TEXT
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     """)
     existing_columns = {row[1] for row in c.execute("PRAGMA table_info(agents)").fetchall()}
-    agent_columns = (
-        "middle_name", "email", "phone", "brokerage", "license_number",
-        "license_state", "office_address", "city", "state", "zip_code",
-        "website", "specialties", "notes"
-    )
-    for column in agent_columns:
+    agent_columns = {
+        "first_name": "TEXT",
+        "middle_name": "TEXT",
+        "last_name": "TEXT",
+        "email": "TEXT",
+        "phone": "TEXT",
+        "mobile_phone": "TEXT",
+        "office_phone": "TEXT",
+        "broker_id": "INTEGER",
+        "office_id": "INTEGER",
+        "team_id": "INTEGER",
+        "brokerage": "TEXT",
+        "license_number": "TEXT",
+        "license_state": "TEXT",
+        "license_expiration_date": "TEXT",
+        "mls_id": "TEXT",
+        "nrds_id": "TEXT",
+        "agent_type": "TEXT",
+        "years_experience": "INTEGER",
+        "status": "TEXT",
+        "preferred_contact_method": "TEXT",
+        "agent_tags": "TEXT",
+        "social_media_links": "TEXT",
+        "profile_photo_url": "TEXT",
+        "office_address": "TEXT",
+        "city": "TEXT",
+        "state": "TEXT",
+        "zip_code": "TEXT",
+        "website": "TEXT",
+        "specialties": "TEXT",
+        "notes": "TEXT",
+        "created_at": "TEXT",
+        "updated_at": "TEXT",
+    }
+    for column, column_type in agent_columns.items():
         if column not in existing_columns:
-            c.execute(f"ALTER TABLE agents ADD COLUMN {column} TEXT")
+            c.execute(f"ALTER TABLE agents ADD COLUMN {column} {column_type}")
+    c.execute("UPDATE agents SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL")
+    c.execute("UPDATE agents SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL")
     conn.commit()
     conn.close()
 
@@ -127,13 +175,51 @@ def init_brokers_table():
             state TEXT,
             zip_code TEXT,
             website TEXT,
-            notes TEXT
+            notes TEXT,
+            license_number TEXT,
+            license_state TEXT,
+            license_expiration_date TEXT,
+            mls_id TEXT,
+            nrds_id TEXT,
+            broker_type TEXT,
+            years_experience INTEGER,
+            office_id INTEGER,
+            is_primary_broker INTEGER DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            status TEXT,
+            preferred_contact_method TEXT,
+            tags TEXT,
+            social_media_links TEXT,
+            profile_photo_url TEXT
         )
     """)
     existing_columns = {row[1] for row in conn.execute("PRAGMA table_info(brokers)").fetchall()}
-    for column in ("first_name", "last_name"):
+    broker_columns = {
+        "first_name": "TEXT",
+        "last_name": "TEXT",
+        "license_number": "TEXT",
+        "license_state": "TEXT",
+        "license_expiration_date": "TEXT",
+        "mls_id": "TEXT",
+        "nrds_id": "TEXT",
+        "broker_type": "TEXT",
+        "years_experience": "INTEGER",
+        "office_id": "INTEGER",
+        "is_primary_broker": "INTEGER DEFAULT 0",
+        "created_at": "TEXT",
+        "updated_at": "TEXT",
+        "status": "TEXT",
+        "preferred_contact_method": "TEXT",
+        "tags": "TEXT",
+        "social_media_links": "TEXT",
+        "profile_photo_url": "TEXT",
+    }
+    for column, column_type in broker_columns.items():
         if column not in existing_columns:
-            conn.execute(f"ALTER TABLE brokers ADD COLUMN {column} TEXT")
+            conn.execute(f"ALTER TABLE brokers ADD COLUMN {column} {column_type}")
+    conn.execute("UPDATE brokers SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL")
+    conn.execute("UPDATE brokers SET updated_at = CURRENT_TIMESTAMP WHERE updated_at IS NULL")
     conn.commit()
     conn.close()
 

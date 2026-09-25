@@ -5,6 +5,13 @@ from models.agents import FIELDS, list_agents, get_agent, insert_agent, update_a
 from models.brokers import list_brokers
 
 
+def agent_form_fields():
+    values = {name: request.form.get(name, "").strip() for name in FIELDS}
+    for name in ("broker_id", "office_id", "team_id", "years_experience"):
+        values[name] = request.form.get(name, type=int)
+    return [values[name] for name in FIELDS]
+
+
 @app.route("/agents")
 def agents():
     return render_template("agents.html", agents=list_agents())
@@ -14,10 +21,12 @@ def agents():
 def create_agent():
     if request.method == "GET":
         agent = {field: "" for field in FIELDS}
-        agent["name"] = ""
+        agent.update(name="", status="Active")
         return render_template("edit_agent.html", agent=agent, brokers=list_brokers(), is_new=True)
 
-    fields = [request.form.get(name, "").strip() for name in FIELDS]
+    fields = agent_form_fields()
+    if not fields[FIELDS.index("first_name")] or not fields[FIELDS.index("last_name")]:
+        return "First name and last name are required.", 400
     insert_agent(fields)
     return redirect(url_for("agents"))
 
@@ -25,7 +34,9 @@ def create_agent():
 @app.route("/agents/<int:agent_id>", methods=["GET", "POST"])
 def edit_agent(agent_id):
     if request.method == "POST":
-        fields = [request.form.get(name, "").strip() for name in FIELDS]
+        fields = agent_form_fields()
+        if not fields[FIELDS.index("first_name")] or not fields[FIELDS.index("last_name")]:
+            return "First name and last name are required.", 400
         update_agent(fields, agent_id)
         return redirect(url_for("agents"))
 

@@ -13,6 +13,11 @@
         .shortcut-bar { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 30px; }
         .shortcut-bar a { padding: 9px 13px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.75); color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; }
         .shortcut-bar a:hover, .shortcut-bar a.active { border-color: var(--blue); color: var(--blue); }
+        .shortcut-bar .task-menu { position: relative; }
+        .shortcut-bar .task-menu > summary { padding: 9px 13px; border: 1px solid var(--blue); border-radius: 8px; background: rgba(255,255,255,.75); color: var(--blue); cursor: pointer; font-size: 13px; font-weight: 700; list-style: none; }
+        .shortcut-bar .task-menu > summary::-webkit-details-marker { display: none; }
+        .shortcut-bar .task-submenu { position: absolute; z-index: 2; top: calc(100% + 5px); left: 0; display: grid; min-width: 150px; gap: 3px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 8px 18px rgba(23,32,51,.14); }
+        .shortcut-bar .task-submenu a { padding: 8px 10px; border: 0; background: transparent; white-space: nowrap; }
         .page-header { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 26px; }
         .eyebrow { margin: 0 0 7px; color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
         h1, h2 { font-family: "Space Grotesk", Arial, sans-serif; }
@@ -60,7 +65,14 @@
         <a href="{{ url_for('agents') }}">Agents</a>
         <a href="{{ url_for('brokers') }}">Brokers</a>
         <a href="{{ url_for('contacts') }}">Contacts</a>
-        <a class="active" href="{{ url_for('tasks') }}">Tasks</a>
+        <details class="task-menu" open>
+            <summary>Tasks</summary>
+            <div class="task-submenu">
+                <a class="active" href="{{ url_for('tasks') }}">Task Board</a>
+                <a href="{{ url_for('generate_open_house') }}">Open Houses</a>
+            </div>
+        </details>
+        <a href="{{ url_for('task_history') }}">History</a>
     </nav>
 
     <header class="page-header">
@@ -95,8 +107,14 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="field"><label for="priority">Priority</label><select id="priority" name="priority"><option>Normal</option><option>High</option><option>Low</option></select></div>
-                    <div class="field wide"><label for="status">Status</label><select id="status" name="status"><option>Open</option><option>In Progress</option><option>Completed</option></select></div>
+                    <div class="field"><label for="priority">Priority</label><select id="priority" name="priority" required><option value="" selected disabled>Select priority</option><option>Low</option><option>Medium</option><option>High</option></select></div>
+                    <div class="field"><label for="task-type">Task Type</label><select id="task-type" name="task_type" required>
+                        <option value="" selected disabled>Select task type</option>
+                        {% for task_type in task_types %}
+                        <option>{{ task_type }}</option>
+                        {% endfor %}
+                    </select></div>
+                    <div class="field wide"><label for="status">Status</label><select id="status" name="status" required><option value="" selected disabled>Select status</option><option>Pending</option><option>In Progress</option><option>Completed</option><option>Canceled</option><option>Overdue</option></select></div>
                     <div class="follow-up-group">
                         <h3>Follow-up actions</h3>
                         <p class="follow-up-help">Choose one or both messages. Each selected action can be sent now or scheduled.</p>

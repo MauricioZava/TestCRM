@@ -4,7 +4,7 @@ FIELDS = (
     "first_name", "middle_name", "last_name", "email", "phone", "mobile_phone", "office_phone",
     "broker_id", "office_id", "team_id", "brokerage", "license_number", "license_state",
     "license_expiration_date", "mls_id", "nrds_id", "agent_type", "years_experience", "status",
-    "preferred_contact_method", "agent_tags", "social_media_links", "profile_photo_url", "office_address",
+    "preferred_contact_method", "agent_tags", "social_media_links", "x_com_profile", "profile_photo_url", "office_address",
     "city", "state", "zip_code", "website", "specialties", "notes"
 )
 

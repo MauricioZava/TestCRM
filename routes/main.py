@@ -33,6 +33,7 @@ def dashboard():
             "notes": row[4],
             "client_name": " ".join(part for part in (row[5], row[6]) if part),
             "client_email": row[7],
+            "task_type": row[8],
         }
         for row in task_rows
     ]

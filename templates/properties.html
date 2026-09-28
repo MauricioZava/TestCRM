@@ -20,64 +20,184 @@
         .eyebrow { margin: 0 0 7px; color: #d9922e; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; } h1, h2 { margin: 0; font-family: "Space Grotesk", Arial, sans-serif; letter-spacing: -.03em; } h1 { font-size: clamp(30px, 4vw, 46px); } h2 { font-size: 21px; } .subtitle, .panel-intro { margin: 8px 0 0; color: var(--muted); } .panel-intro { font-size: 13px; }
         .button, button { min-height: 40px; padding: 9px 13px; border: 0; border-radius: 9px; background: var(--blue); color: #fff; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; } .button:hover, button:hover { filter: brightness(.92); } .button.secondary { background: var(--ink); } .button.ghost { border: 1px solid var(--line); background: rgba(255,255,255,.75); color: var(--ink); }
         .workspace { display: grid; grid-template-columns: minmax(310px, 420px) minmax(0, 1fr); gap: 22px; align-items: start; } .panel { min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); } .panel-header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 20px; } .count { color: var(--muted); font-size: 13px; font-weight: 800; white-space: nowrap; }
-        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; } .field { min-width: 0; } .wide { grid-column: 1 / -1; } label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; } input, select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdff; color: var(--ink); font: inherit; } input:focus, select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; } .field { min-width: 0; } .wide { grid-column: 1 / -1; } label { display: block; margin: 13px 0 5px; color: var(--ink); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; } input, select, textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: #fbfdff; color: var(--ink); font: inherit; } textarea { min-height: 86px; resize: vertical; } input[type="checkbox"] { width: 18px; min-height: 18px; margin: 12px 0; accent-color: var(--blue); } input[readonly] { background: #eef2f6; color: var(--muted); } input:focus, select:focus, textarea:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 4px rgba(37,99,199,.12); }
+        .form-section { grid-column: 1 / -1; margin-top: 18px; padding-top: 15px; border-top: 1px solid var(--line); } .form-section h3 { margin: 0; color: var(--muted); font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+        .system-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px; }
         .address-search { position: relative; } .suggestions { position: absolute; z-index: 2; width: 100%; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: #fff; box-shadow: 0 8px 20px rgba(23,32,51,.14); } .suggestion { display: block; width: 100%; padding: 11px 12px; border: 0; border-bottom: 1px solid #edf1f4; border-radius: 0; background: #fff; color: var(--ink); font: inherit; text-align: left; } .suggestion:hover { background: #eef5ff; color: #194c9d; } .suggestion small { display: block; margin-top: 3px; color: var(--muted); }
         .checkbox-field { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; background: #f8fbff; } .checkbox-field input { width: 18px; min-height: 18px; margin: 0; accent-color: var(--blue); } .checkbox-field label { margin: 0; font-size: 12px; }
         .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 20px; } .delete-button { grid-column: 1 / -1; background: #fff0f1; color: var(--red); } button:disabled { background: #a9b4c3; cursor: not-allowed; }
-        .property-list { display: grid; gap: 10px; } .property-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 16px; border: 1px solid var(--line); border-left: 4px solid #6ed3cf; border-radius: 11px; background: var(--paper); cursor: pointer; } .property-card:hover, .property-card.selected-home { border-color: #9ebce7; background: #f4f8ff; } .property-address { font-size: 16px; font-weight: 800; } .property-location { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 600; }
+        .property-list { display: grid; gap: 10px; } .property-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 16px; border: 1px solid var(--line); border-left: 4px solid #6ed3cf; border-radius: 8px; background: var(--paper); cursor: pointer; } .property-card:hover, .property-card.selected-home { border-color: #9ebce7; background: #f4f8ff; } .property-address { font-size: 16px; font-weight: 800; } .property-location { margin-top: 4px; color: var(--muted); font-size: 13px; font-weight: 600; } .property-image { width: 112px; aspect-ratio: 4 / 3; border-radius: 6px; object-fit: cover; background: #e8edf3; }
         .property-details { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 8px 16px; margin-top: 12px; } .detail { min-width: 0; } .detail-label { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; } .detail-value { overflow-wrap: anywhere; color: var(--ink); font-size: 12px; font-weight: 600; } .badge { align-self: start; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; } .current-badge { background: #e8f7f1; color: #287d68; } .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
-        @media (max-width: 980px) { .workspace { grid-template-columns: 1fr; } } @media (max-width: 768px) { .app-shell { display: block; } .sidebar { position: relative; min-height: auto; padding: 18px; } .brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; } .brand-mark { margin: 0; } .brand small { margin-top: 2px; } .sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; } .sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; } .sidebar-nav a.active { border-bottom-color: var(--gold); } .sidebar-footer { display: none; } .content-shell { padding: 28px 16px; } } @media (max-width: 520px) { .topbar { align-items: start; flex-direction: column; } .form-grid, .property-details, .form-actions { grid-template-columns: 1fr; } .wide, .delete-button { grid-column: auto; } .panel { padding: 18px; } }
-    </style>
+        @media (max-width: 980px) { .workspace { grid-template-columns: 1fr; } } @media (max-width: 768px) { .app-shell { display: block; } .sidebar { position: relative; min-height: auto; padding: 18px; } .brand { display: flex; align-items: center; gap: 12px; padding: 0 0 18px; } .brand-mark { margin: 0; } .brand small { margin-top: 2px; } .sidebar-nav { display: flex; overflow-x: auto; margin-top: 18px; padding-bottom: 3px; } .sidebar-nav a { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; } .sidebar-nav a.active { border-bottom-color: var(--gold); } .sidebar-footer { display: none; } .content-shell { padding: 28px 16px; } } @media (max-width: 520px) { .topbar { align-items: start; flex-direction: column; } .form-grid, .system-fields, .property-details, .form-actions { grid-template-columns: 1fr; } .wide, .delete-button { grid-column: auto; } .property-image { width: 100%; max-width: 180px; } .panel { padding: 18px; } }
+            .sidebar-nav .task-menu > summary { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; cursor: pointer; font-size: 14px; font-weight: 700; list-style: none; }
+            .sidebar-nav .task-menu > summary::-webkit-details-marker { display: none; }
+            .sidebar-nav .task-menu > summary::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; background: #c1ccd9; color: var(--ink); content: "T"; font-size: 13px; font-weight: 800; }
+            .sidebar-nav .task-menu > summary:hover, .sidebar-nav .task-menu[open] > summary { background: rgba(255,255,255,.1); color: #fff; }
+            .sidebar-nav .task-submenu { display: grid; gap: 3px; margin-left: 18px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,.2); }
+            .sidebar-nav .task-submenu a { min-height: 36px; padding: 0 8px; border: 0; font-size: 13px; }
+            .sidebar-nav .task-submenu a::before { display: none; }
+            .sidebar-nav .task-menu[open] .task-submenu a:hover, .sidebar-nav .task-submenu a.active { background: rgba(255,255,255,.1); color: #fff; }
+        </style>
 </head>
 <body>
 <div class="app-shell">
-    <aside class="sidebar"><div class="brand"><span class="brand-mark">FH</span><div><strong>The Best Of Florida Homes</strong><small>Lead workspace</small></div></div><nav class="sidebar-nav" aria-label="Main navigation"><a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a><a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a><a class="nav-tasks" href="{{ url_for('tasks') }}">Tasks</a><a class="active nav-properties" href="{{ url_for('properties') }}">Properties</a><a class="nav-agents" href="{{ url_for('agents') }}">Agents</a><a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a><a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a><a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a><a href="{{ url_for('export_csv') }}">Export CSV</a><a href="{{ url_for('logout') }}">Log Out</a></nav><div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div></aside>
+    <aside class="sidebar"><div class="brand"><span class="brand-mark">FH</span><div><strong>The Best Of Florida Homes</strong><small>Lead workspace</small></div></div><nav class="sidebar-nav" aria-label="Main navigation"><a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a><a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a><details class="task-menu" {% if request.endpoint in ['tasks', 'task_history', 'generate_open_house'] %}open{% endif %}><summary>Tasks</summary><div class="task-submenu"><a class="nav-subitem{% if request.endpoint == 'tasks' %} active{% endif %}" href="{{ url_for('tasks') }}">Task Board</a><a class="nav-subitem{% if request.endpoint == 'generate_open_house' %} active{% endif %}" href="{{ url_for('generate_open_house') }}">Open Houses</a></div></details><a href="{{ url_for('task_history') }}">History</a><a class="active nav-properties" href="{{ url_for('properties') }}">Properties</a><a class="nav-agents" href="{{ url_for('agents') }}">Agents</a><a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a><a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a><a href="{{ url_for('export_csv') }}">Export CSV</a><a href="{{ url_for('logout') }}">Log Out</a></nav><div class="sidebar-footer">F1 Dashboard<br>F2 Properties</div></aside>
     <main class="content-shell"><div class="page">
         <header class="topbar"><div><p class="eyebrow">Listing workspace</p><h1>Properties</h1><p class="subtitle">Manage the homes connected to your open house workflow.</p></div><div><a class="button secondary" href="{{ url_for('dashboard') }}">Dashboard</a><button class="button ghost" type="button" id="new-home-button">New property</button></div></header>
         <div class="workspace">
             <section class="panel"><div class="panel-header"><div><h2 id="form-title">Add a property</h2><p class="panel-intro">Search a public address or enter the property details below.</p></div></div>
                 <div class="address-search"><label for="address-search-input">Search public addresses</label><input id="address-search-input" type="search" placeholder="Start typing an address..." autocomplete="off"><div id="address-suggestions" class="suggestions" hidden></div></div>
-                <form method="post" id="home-form"><input type="hidden" name="home_id" id="home-id"><div class="form-grid"><div class="field"><label for="property-id">Property ID</label><input id="property-id" name="property_id"></div><div class="field"><label for="agent-id">Assigned Agent</label><select id="agent-id" name="agent_id"><option value="">Select an agent</option>{% for agent in agents %}<option value="{{ agent.id }}">{{ agent.first_name }}{% if agent.middle_name %} {{ agent.middle_name }}{% endif %} {{ agent.last_name }}</option>{% endfor %}</select></div><div class="field wide"><label for="address">Address</label><input id="address" name="address"></div><div class="field"><label for="city">City</label><input id="city" name="city"></div><div class="field"><label for="state">State</label><input id="state" name="state"></div><div class="field"><label for="zip-code">Zip Code</label><input id="zip-code" name="zip_code"></div><div class="field"><label for="rooms">Rooms</label><input id="rooms" name="rooms" placeholder="3 bed, 2 bath"></div><div class="field"><label for="lot-size">Lot Size</label><input id="lot-size" name="lot_size" placeholder="0.25 acres"></div></div><div class="checkbox-field"><input id="is-current" type="checkbox" name="is_current"><label for="is-current">Set as current home</label></div><div class="form-actions"><button id="add-home-button" type="submit" name="action" value="add">Add Property</button><button type="submit" name="action" value="update">Update Property</button><button type="submit" name="action" value="delete" class="delete-button" onclick="return confirm('Delete this property?');">Delete Property</button></div></form>
+                <form method="post" id="property-form">
+                    <input type="hidden" name="property_id" id="property-id">
+                    <input type="hidden" name="LegacyPropertyID" id="legacy-property-id">
+                    <div class="system-fields">
+                        <div class="field"><label>Property ID</label><input id="property-id-display" readonly placeholder="Assigned on save"></div>
+                        <div class="field"><label>Created At</label><input id="created-at" readonly placeholder="Set on save"></div>
+                        <div class="field"><label>Updated At</label><input id="updated-at" readonly placeholder="Set on save"></div>
+                    </div>
+                    <div class="form-grid">
+                        {% for section_title, fields in form_sections %}
+                        <section class="form-section"><h3>{{ section_title }}</h3><div class="form-grid">
+                            {% for name, label, field_type in fields %}
+                            <div class="field{% if field_type == 'textarea' %} wide{% endif %}">
+                                <label for="{{ name }}">{{ label }}</label>
+                                {% if field_type == 'textarea' %}
+                                <textarea id="{{ name }}" name="{{ name }}"></textarea>
+                                {% elif field_type == 'checkbox' %}
+                                <input id="{{ name }}" type="checkbox" name="{{ name }}" value="1">
+                                {% else %}
+                                <input id="{{ name }}" type="{{ field_type }}" name="{{ name }}"{% if field_type == 'number' %} step="any"{% endif %}>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div></section>
+                        {% endfor %}
+                    </div>
+                    <div class="form-actions">
+                        <button id="add-property-button" type="submit" name="action" value="add">Add Property</button>
+                        <button id="update-property-button" type="submit" name="action" value="update" disabled>Update Property</button>
+                        <button id="delete-property-button" type="submit" name="action" value="delete" class="delete-button" disabled onclick="return confirm('Delete this property?');">Delete Property</button>
+                    </div>
+                </form>
             </section>
-            <section class="panel"><div class="panel-header"><div><h2>Saved properties</h2><p class="panel-intro">Select a property to load its current table values into the form.</p></div><span class="count">{{ homes|length }} propert{% if homes|length == 1 %}y{% else %}ies{% endif %}</span></div>{% if homes %}<div class="property-list">{% for h in homes %}<article class="property-card" data-home-id="{{ h[0] }}" data-property-id="{{ h[1] or '' }}" data-agent-id="{{ h[2] or '' }}" data-address="{{ h[3]|e }}" data-city="{{ h[4]|e }}" data-state="{{ h[5]|e }}" data-zip-code="{{ h[6]|e }}" data-rooms="{{ h[7]|e }}" data-lot-size="{{ h[8]|e }}" data-current="{{ h[9] }}"><div><div class="property-address">{{ h[3] or "Address not set" }}</div><div class="property-location">{{ h[4] or "City not set" }}{% if h[5] %}, {{ h[5] }}{% endif %}{% if h[6] %} {{ h[6] }}{% endif %}</div><div class="property-details"><div class="detail"><span class="detail-label">Property ID</span><span class="detail-value">{{ h[1] or "Not set" }}</span></div><div class="detail"><span class="detail-label">Agent</span><span class="detail-value">{% for agent in agents if agent.id == h[2] %}{{ agent.first_name }}{% if agent.middle_name %} {{ agent.middle_name }}{% endif %} {{ agent.last_name }}{% else %}Unassigned{% endfor %}</span></div><div class="detail"><span class="detail-label">Rooms</span><span class="detail-value">{{ h[7] or "Not set" }}</span></div><div class="detail"><span class="detail-label">Lot Size</span><span class="detail-value">{{ h[8] or "Not set" }}</span></div></div></div>{% if h[9] == 1 %}<span class="badge current-badge">Current</span>{% else %}<span class="badge">Property</span>{% endif %}</article>{% endfor %}</div>{% else %}<div class="empty-state">No properties have been added yet.</div>{% endif %}</section>
+            <section class="panel">
+                <div class="panel-header"><div><h2>Saved properties</h2><p class="panel-intro">Select a property to edit its details.</p></div><span class="count">{{ properties|length }} propert{% if properties|length == 1 %}y{% else %}ies{% endif %}</span></div>
+                {% if properties %}
+                <div class="property-list">
+                    {% for property in properties %}
+                    <article class="property-card" data-property="{{ property|tojson|forceescape }}">
+                        <div>
+                            <div class="property-address">{{ property.Address or "Address not set" }}</div>
+                            <div class="property-location">{{ property.City or "City not set" }}{% if property.State %}, {{ property.State }}{% endif %}{% if property.ZipCode %} {{ property.ZipCode }}{% endif %}</div>
+                            <div class="property-details">
+                                <div class="detail"><span class="detail-label">Listing</span><span class="detail-value">{{ property.ListingStatus or "Not listed" }}{% if property.ListingPrice %} - ${{ "{:,.0f}".format(property.ListingPrice|float) }}{% endif %}</span></div>
+                                <div class="detail"><span class="detail-label">Type</span><span class="detail-value">{{ property.PropertyType or "Not set" }}</span></div>
+                                <div class="detail"><span class="detail-label">Beds / Baths</span><span class="detail-value">{{ property.Bedrooms or "-" }} / {{ property.Bathrooms or "-" }}</span></div>
+                                <div class="detail"><span class="detail-label">Square Feet</span><span class="detail-value">{{ property.SquareFeet or "Not set" }}</span></div>
+                            </div>
+                        </div>
+                        <div>{% if property.MainPhotoURL %}<img class="property-image" src="{{ property.MainPhotoURL|e }}" alt="Property at {{ property.Address or 'address unavailable' }}">{% endif %}{% if property.IsCurrentHome == 1 %}<span class="badge current-badge">Current home</span>{% elif property.IsOpenHouseActive == 1 %}<span class="badge">Open house</span>{% endif %}</div>
+                    </article>
+                    {% endfor %}
+                </div>
+                {% else %}<div class="empty-state">No properties have been added yet.</div>{% endif %}
+            </section>
         </div>
     </div></main>
 </div>
 <script>
-    const homeForm = document.getElementById("home-form");
-    const homeId = document.getElementById("home-id");
-    const addHomeButton = document.getElementById("add-home-button");
-    const newHomeButton = document.getElementById("new-home-button");
-    const formTitle = document.getElementById("form-title");
+    const propertyForm = document.getElementById("property-form");
+    const propertyIdInput = document.getElementById("property-id");
+    const legacyPropertyIdInput = document.getElementById("legacy-property-id");
     const addressInput = document.getElementById("address-search-input");
-    const addressField = document.getElementById("address");
     const suggestionList = document.getElementById("address-suggestions");
-    const homeFields = { property_id: document.getElementById("property-id"), address: addressField, city: document.getElementById("city"), state: document.getElementById("state"), zip_code: document.getElementById("zip-code"), rooms: document.getElementById("rooms"), lot_size: document.getElementById("lot-size") };
-    let searchTimer; let searchSequence = 0;
-    function resetHomeForm() { homeForm.reset(); homeId.value = ""; addressInput.value = ""; addHomeButton.disabled = false; formTitle.textContent = "Add a property"; document.querySelectorAll(".property-card").forEach((item) => item.classList.remove("selected-home")); document.getElementById("property-id").focus(); }
-    newHomeButton.addEventListener("click", resetHomeForm);
-    document.querySelectorAll(".property-card").forEach((card) => { card.addEventListener("click", () => { homeId.value = card.dataset.homeId; Object.entries(homeFields).forEach(([name, field]) => { field.value = card.getAttribute(`data-${name.replaceAll("_", "-")}`) || ""; }); homeForm.elements.agent_id.value = card.dataset.agentId; homeForm.elements.is_current.checked = card.dataset.current === "1"; addHomeButton.disabled = true; formTitle.textContent = "Update property"; document.querySelectorAll(".property-card").forEach((item) => item.classList.remove("selected-home")); card.classList.add("selected-home"); homeForm.scrollIntoView({ behavior: "smooth", block: "start" }); }); });
-    addressInput.addEventListener("input", () => { clearTimeout(searchTimer); const query = addressInput.value.trim(); suggestionList.hidden = true; suggestionList.replaceChildren(); if (query.length < 3) return; const sequence = ++searchSequence; searchTimer = setTimeout(async () => { try { const response = await fetch(`/address_suggestions?q=${encodeURIComponent(query)}`); const data = await response.json(); if (sequence !== searchSequence) return; data.results.forEach((result) => { const option = document.createElement("button"); option.type = "button"; option.className = "suggestion"; option.textContent = result.address || result.display_name; const details = document.createElement("small"); details.textContent = `${result.city}, ${result.state} ${result.zip_code}`; option.appendChild(details); option.addEventListener("click", () => { Object.entries(homeFields).forEach(([name, field]) => { field.value = result[name] || ""; }); suggestionList.hidden = true; }); suggestionList.appendChild(option); }); suggestionList.hidden = data.results.length === 0; } catch (error) { suggestionList.hidden = true; } }, 300); });
-    document.addEventListener("click", (event) => { if (!event.target.closest(".address-search")) suggestionList.hidden = true; });
-    document.addEventListener("keydown", (event) => { if (event.key === "F1") { event.preventDefault(); window.location.href = "/signin"; } else if (event.key === "F2") { event.preventDefault(); window.location.href = "/dashboard"; } });
-</script>
-<script>
-    const brokerRecords = {
-        {% for broker in brokers %}
-        "{{ broker.id }}": { firstName: {{ (broker.first_name or "")|tojson }}, lastName: {{ (broker.last_name or "")|tojson }} }{% if not loop.last %},{% endif %}
-        {% endfor %}
-    };
-    const propertyBrokerIds = [{% for home in homes %}{{ home[10] if home[10] else "null" }}{% if not loop.last %}, {% endif %}{% endfor %}];
-    document.getElementById("agent-id").closest(".field").insertAdjacentHTML("afterend", `
-        <div class="field"><label for="broker-id">Broker</label><select id="broker-id" name="broker_id"><option value="">Select a broker</option>{% for broker in brokers %}<option value="{{ broker.id }}">{{ broker.company_name|e }}</option>{% endfor %}</select></div>
-    `);
-    const brokerSelect = document.getElementById("broker-id");
-    document.querySelectorAll(".property-card").forEach((card, index) => {
-        card.dataset.brokerId = propertyBrokerIds[index] || "";
+    const addPropertyButton = document.getElementById("add-property-button");
+    const updatePropertyButton = document.getElementById("update-property-button");
+    const deletePropertyButton = document.getElementById("delete-property-button");
+    const formTitle = document.getElementById("form-title");
+    let searchTimer;
+    let searchSequence = 0;
+
+    function resetPropertyForm() {
+        propertyForm.reset();
+        propertyIdInput.value = "";
+        legacyPropertyIdInput.value = "";
+        addressInput.value = "";
+        document.getElementById("property-id-display").value = "";
+        document.getElementById("created-at").value = "";
+        document.getElementById("updated-at").value = "";
+        addPropertyButton.disabled = false;
+        updatePropertyButton.disabled = true;
+        deletePropertyButton.disabled = true;
+        formTitle.textContent = "Add a property";
+        document.querySelectorAll(".property-card").forEach((card) => card.classList.remove("selected-home"));
+    }
+
+    document.getElementById("new-home-button").addEventListener("click", resetPropertyForm);
+    document.querySelectorAll(".property-card").forEach((card) => {
         card.addEventListener("click", () => {
-            brokerSelect.value = card.dataset.brokerId;
+            const property = JSON.parse(card.dataset.property);
+            propertyIdInput.value = property.PropertyID;
+            legacyPropertyIdInput.value = property.LegacyPropertyID || "";
+            document.getElementById("property-id-display").value = property.PropertyID;
+            document.getElementById("created-at").value = property.CreatedAt || "";
+            document.getElementById("updated-at").value = property.UpdatedAt || "";
+            propertyForm.querySelectorAll("input[name], select[name], textarea[name]").forEach((field) => {
+                if (["property_id", "LegacyPropertyID"].includes(field.name)) return;
+                if (field.type === "checkbox") field.checked = property[field.name] === 1;
+                else field.value = property[field.name] ?? "";
+            });
+            addPropertyButton.disabled = true;
+            updatePropertyButton.disabled = false;
+            deletePropertyButton.disabled = false;
+            formTitle.textContent = "Update property";
+            document.querySelectorAll(".property-card").forEach((item) => item.classList.remove("selected-home"));
+            card.classList.add("selected-home");
+            propertyForm.scrollIntoView({ behavior: "smooth", block: "start" });
         });
     });
+
+    addressInput.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        const query = addressInput.value.trim();
+        suggestionList.hidden = true;
+        suggestionList.replaceChildren();
+        if (query.length < 3) return;
+        const sequence = ++searchSequence;
+        searchTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`/address_suggestions?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                if (sequence !== searchSequence) return;
+                data.results.forEach((result) => {
+                    const option = document.createElement("button");
+                    option.type = "button";
+                    option.className = "suggestion";
+                    option.textContent = result.address || result.display_name;
+                    const details = document.createElement("small");
+                    details.textContent = `${result.city}, ${result.state} ${result.zip_code}`;
+                    option.appendChild(details);
+                    option.addEventListener("click", () => {
+                        propertyForm.elements.Address.value = result.address || "";
+                        propertyForm.elements.City.value = result.city || "";
+                        propertyForm.elements.State.value = result.state || "";
+                        propertyForm.elements.ZipCode.value = result.zip_code || "";
+                        legacyPropertyIdInput.value = result.property_id || "";
+                        suggestionList.hidden = true;
+                    });
+                    suggestionList.appendChild(option);
+                });
+                suggestionList.hidden = data.results.length === 0;
+            } catch (error) {
+                suggestionList.hidden = true;
+            }
+        }, 300);
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!event.target.closest(".address-search")) suggestionList.hidden = true;
+    });
+    document.addEventListener("keydown", (event) => { if (event.key === "F1") { event.preventDefault(); window.location.href = "/signin"; } else if (event.key === "F2") { event.preventDefault(); window.location.href = "/dashboard"; } });
 </script>
 </body>
 </html>

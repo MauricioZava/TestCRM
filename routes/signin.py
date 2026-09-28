@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import request, redirect, url_for, render_template
 
 from extensions import app
-from models.homes import list_homes_brief
+from models.properties import list_homes_brief
 from models.signins import insert_signin, hide_signin
 from models.open_houses import get_scheduled_agent, list_open_houses_detailed
 from services.scoring import categorize_and_score

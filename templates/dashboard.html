@@ -538,6 +538,14 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
 .nav-settings::before { content: "⚙"; background: #c1ccd9; }
 .sidebar-nav a:hover, .sidebar-nav a.active, .nav-contacts:hover { transform: translateX(3px); background: rgba(255,255,255,.1); color: #fff; }
 .sidebar-nav a.active { border-left-color: #ffb547; }
+.sidebar-nav .task-menu > summary { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; cursor: pointer; font-size: 14px; font-weight: 700; list-style: none; }
+.sidebar-nav .task-menu > summary::-webkit-details-marker { display: none; }
+.sidebar-nav .task-menu > summary::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; background: #c1ccd9; color: #172033; content: "T"; font-size: 13px; font-weight: 800; }
+.sidebar-nav .task-menu > summary:hover, .sidebar-nav .task-menu[open] > summary { background: rgba(255,255,255,.1); color: #fff; }
+.sidebar-nav .task-submenu { display: grid; gap: 3px; margin-left: 18px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,.2); }
+.sidebar-nav .task-submenu a { min-height: 36px; padding: 0 8px; border: 0; font-size: 13px; }
+.sidebar-nav .task-submenu a::before { display: none; }
+.sidebar-nav .task-menu[open] .task-submenu a:hover, .sidebar-nav .task-submenu a.active { background: rgba(255,255,255,.1); color: #fff; }
 .nav-contacts { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; text-decoration: none; font-size: 14px; font-weight: 700; letter-spacing: .02em; transition: background .2s ease, color .2s ease, transform .2s ease; }
 .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
 .content-shell { min-width: 0; padding: 42px clamp(20px, 4vw, 58px); }
@@ -558,6 +566,8 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
 .dashboard-task-status, .dashboard-task-priority { padding: 5px 9px; border-radius: 999px; font-size: 11px; font-weight: 900; white-space: nowrap; }
 .dashboard-task-status { background: #b7e4c7; color: #172033; }
 .dashboard-task-priority { background: #ffcf7a; color: #172033; }
+.dashboard-task-type { background: #b7e4c7; color: #172033; }
+.dashboard-task-meta { display: flex; grid-column: 1 / -1; flex-wrap: wrap; gap: 8px; }
 .dashboard-task-empty { color: #aeb9ca; font-size: 13px; }
 .dashboard-schedule { margin: 0 0 30px; padding: 17px 18px 18px; border: 1px solid #d9e1ea; border-radius: 14px; background: rgba(255,255,255,.94); box-shadow: 0 10px 28px rgba(23,32,51,.07); }
 .dashboard-schedule-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
@@ -652,11 +662,17 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
         <nav class="sidebar-nav" aria-label="Main navigation">
             <a class="active nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
             <a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
-            <a class="nav-analytics" href="{{ url_for('tasks') }}">Tasks</a>
+            <details class="task-menu" {% if request.endpoint in ['tasks', 'task_history', 'generate_open_house'] %}open{% endif %}>
+                <summary>Tasks</summary>
+                <div class="task-submenu">
+                    <a class="nav-subitem{% if request.endpoint == 'tasks' %} active{% endif %}" href="{{ url_for('tasks') }}">Task Board</a>
+                    <a class="nav-subitem{% if request.endpoint == 'generate_open_house' %} active{% endif %}" href="{{ url_for('generate_open_house') }}">Open Houses</a>
+                </div>
+            </details>
+            <a href="{{ url_for('task_history') }}">History</a>
             <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
             <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
             <a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
-            <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
             <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
             <a href="{{ url_for('export_csv') }}">Export CSV</a>
             <a class="nav-settings" href="{{ url_for('logout') }}">Log Out</a>
@@ -679,8 +695,11 @@ body { min-height: 100vh; padding: 0; background: #e8edf3; color: #172033; }
         <div class="dashboard-task">
             <div class="dashboard-task-client"><strong>{{ task.client_name }}</strong><span>{{ task.client_email or "No email" }}</span></div>
             <div class="dashboard-task-title"><strong>{{ task.title }}</strong><span>{{ task.notes or "No notes" }}</span></div>
-            <span class="dashboard-task-priority">{{ task.priority }}</span>
-            <span class="dashboard-task-status">{{ task.status }}</span>
+            <div class="dashboard-task-meta">
+                <span class="dashboard-task-priority">{{ task.priority }}</span>
+                {% if task.task_type %}<span class="dashboard-task-type">{{ task.task_type }}</span>{% endif %}
+                <span class="dashboard-task-status">{{ task.status }}</span>
+            </div>
         </div>
         {% endfor %}
     </div>

@@ -22,6 +22,14 @@
         .nav-dashboard::before { content: "D"; background: #ffb547; }.nav-contacts::before { content: "C"; background: #f28f8f; }.nav-tasks::before { content: "T"; background: #c1ccd9; }.nav-properties::before { content: "P"; background: #6ed3cf; }.nav-agents::before { content: "A"; background: #f6c177; }.nav-brokers::before { content: "B"; background: #b7e4c7; }.nav-open-house::before { content: "O"; background: #c9b6f3; }.nav-signins::before { content: "S"; background: #9ca7ff; }
         .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255,255,255,.1); color: #fff; transform: translateX(3px); }
         .sidebar-nav a.active { border-left-color: var(--gold); }
+        .sidebar-nav .task-menu > summary { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; cursor: pointer; font-size: 14px; font-weight: 700; list-style: none; }
+        .sidebar-nav .task-menu > summary::-webkit-details-marker { display: none; }
+        .sidebar-nav .task-menu > summary::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; background: #c1ccd9; color: var(--ink); content: "T"; font-size: 13px; font-weight: 800; }
+        .sidebar-nav .task-menu > summary:hover, .sidebar-nav .task-menu[open] > summary { background: rgba(255,255,255,.1); color: #fff; }
+        .sidebar-nav .task-submenu { display: grid; gap: 3px; margin-left: 18px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,.2); }
+        .sidebar-nav .task-submenu a { min-height: 36px; padding: 0 8px; border: 0; font-size: 13px; }
+        .sidebar-nav .task-submenu a::before { display: none; }
+        .sidebar-nav .task-menu[open] .task-submenu a:hover, .sidebar-nav .task-submenu a.active { background: rgba(255,255,255,.1); color: #fff; }
         .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
         .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); }
         .page { max-width: 1100px; margin: 0 auto; }
@@ -61,11 +69,17 @@
         <nav class="sidebar-nav" aria-label="Main navigation">
             <a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
             <a class="nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
-            <a class="nav-tasks" href="{{ url_for('tasks') }}">Tasks</a>
+            <details class="task-menu" {% if request.endpoint in ['tasks', 'task_history', 'generate_open_house'] %}open{% endif %}>
+                <summary>Tasks</summary>
+                <div class="task-submenu">
+                    <a class="nav-subitem{% if request.endpoint == 'tasks' %} active{% endif %}" href="{{ url_for('tasks') }}">Task Board</a>
+                    <a class="nav-subitem{% if request.endpoint == 'generate_open_house' %} active{% endif %}" href="{{ url_for('generate_open_house') }}">Open Houses</a>
+                </div>
+            </details>
+            <a href="{{ url_for('task_history') }}">History</a>
             <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
             <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
             <a class="active nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
-            <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
             <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
             <a href="{{ url_for('export_csv') }}">Export CSV</a>
             <a href="{{ url_for('logout') }}">Log Out</a>

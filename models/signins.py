@@ -32,6 +32,14 @@ def update_notes(signin_id, notes, motivation_score, followup_message, next_step
     """, (notes, motivation_score, followup_message, next_steps_json, signin_id))
     conn.commit()
     conn.close()
+    conn = get_conn()
+    conn.execute("""
+        UPDATE Contacts
+        SET Notes = ?, LeadScore = ?, LastCommunicationSummary = ?, UpdatedAt = CURRENT_TIMESTAMP
+        WHERE LeadID = (SELECT contact_id FROM signins WHERE id = ?)
+    """, (notes, motivation_score, followup_message, signin_id))
+    conn.commit()
+    conn.close()
 
 
 def hide_signin(signin_id):
@@ -100,6 +108,33 @@ def mark_as_contact(signin_id, motivation_score, followup_message, next_steps_js
     """, (motivation_score, followup_message, next_steps_json, agent_id, signin_id))
     conn.commit()
     conn.close()
+    conn = get_conn()
+    row = conn.execute("""
+        SELECT contact_id, first_name, last_name, email, phone, alternate_phone, preferred_contact_method,
+            heard_about_us, lead_status, motivation_score, agent_id, preferred_areas, zip_code,
+            property_type, bedrooms, preapproval, timeline, notes, created_at
+        FROM signins WHERE id = ?
+    """, (signin_id,)).fetchone()
+    conn.close()
+    if row:
+        from models.contacts import insert_contact, upsert_signin_contact
+        values = {
+            "FirstName": row[1], "LastName": row[2], "Email": row[3], "Phone": row[4],
+            "SecondaryPhone": row[5], "PreferredContactMethod": row[6], "LeadSource": row[7],
+            "LeadStatus": row[8], "LeadScore": motivation_score, "AssignedAgentID": agent_id,
+            "DesiredNeighborhood": row[11], "DesiredZipCode": row[12], "PropertyType": row[13],
+            "BedsMin": int(row[14]) if str(row[14] or "").isdigit() else None,
+            "PreApproved": 1 if row[15] == "yes" else 0, "TimelineToSell": row[16],
+            "Notes": row[17], "InitialContactDate": row[18], "LastCommunicationSummary": followup_message,
+        }
+        if row[0]:
+            upsert_signin_contact(row[0], values)
+        else:
+            lead_id = insert_contact(values)
+            conn = get_conn()
+            conn.execute("UPDATE signins SET contact_id = ? WHERE id = ?", (lead_id, signin_id))
+            conn.commit()
+            conn.close()
 
 
 def insert_contact(data):
@@ -206,9 +241,9 @@ def update_contact(signin_id, data):
 def get_email_and_followup(signin_id):
     conn = get_conn()
     row = conn.execute("""
-        SELECT email, followup_message
-        FROM signins
-        WHERE id = ?
+        SELECT Email, LastCommunicationSummary
+        FROM Contacts
+        WHERE LeadID = ?
     """, (signin_id,)).fetchone()
     conn.close()
     return row
@@ -216,6 +251,6 @@ def get_email_and_followup(signin_id):
 
 def get_email(signin_id):
     conn = get_conn()
-    row = conn.execute("SELECT email FROM signins WHERE id = ?", (signin_id,)).fetchone()
+    row = conn.execute("SELECT Email FROM Contacts WHERE LeadID = ?", (signin_id,)).fetchone()
     conn.close()
     return row

@@ -1,11 +1,16 @@
-from flask import request, redirect, url_for, render_template
+import json
+
+from flask import request, redirect, url_for, render_template, session
 
 from extensions import app
 from models.tasks import (
-    list_contacts_brief, list_agents_brief, list_tasks, insert_task, update_task,
-    delete_task as delete_task_row, get_signin_email, get_signin_name_and_email,
+    list_contacts_brief, list_agents_brief, list_task_types, list_tasks, insert_task, update_task,
+    delete_task as delete_task_row, get_signin_email, get_signin_name_and_email, list_task_history,
 )
 from services.email_service import send_email
+
+TASK_STATUSES = ("Pending", "In Progress", "Completed", "Canceled", "Overdue")
+TASK_PRIORITIES = ("Low", "Medium", "High")
 
 
 @app.route("/tasks")
@@ -22,6 +27,7 @@ def tasks():
         for row in list_contacts_brief()
     ]
     agents = list_agents_brief()
+    task_types = list_task_types()
 
     task_rows = list_tasks()
     task_list = [
@@ -48,11 +54,37 @@ def tasks():
             "notes_email_date": row[20],
             "notes_email_time": row[21],
             "notes_email_send_now": bool(row[22]),
+            "task_type": row[23],
         }
         for row in task_rows
     ]
     selected_contact = next((contact for contact in contacts if contact["id"] == selected_contact_id), None)
-    return render_template("tasks.html", contacts=contacts, agents=agents, tasks=task_list, selected_contact=selected_contact)
+    return render_template(
+        "tasks.html", contacts=contacts, agents=agents, tasks=task_list,
+        task_types=task_types, selected_contact=selected_contact,
+    )
+
+
+@app.route("/task-history")
+def task_history():
+    events = []
+    for event in list_task_history():
+        before = json.loads(event["before_data"]) if event["before_data"] else None
+        after = json.loads(event["after_data"]) if event["after_data"] else None
+        old_values = before or {}
+        new_values = after or {}
+        changes = []
+        for field in sorted(old_values.keys() | new_values.keys()):
+            old_value = old_values.get(field)
+            new_value = new_values.get(field)
+            if old_value != new_value:
+                changes.append({
+                    "field": field.replace("_", " ").title(),
+                    "before": old_value if old_value not in (None, "") else "Not set",
+                    "after": new_value if new_value not in (None, "") else "Not set",
+                })
+        events.append({**event, "changes": changes})
+    return render_template("task_history.html", history=events)
 
 
 @app.route("/tasks/create", methods=["POST"])
@@ -90,7 +122,7 @@ def create_task():
     if action == "delete":
         if not task_id:
             return "Task is required for deletion.", 400
-        delete_task_row(task_id)
+        delete_task_row(task_id, session.get("username"))
         return redirect(url_for("tasks"))
 
     title = request.form.get("title", "").strip()
@@ -137,10 +169,19 @@ def create_task():
     if selected_titles:
         title = " and ".join(selected_titles)
 
+    status = request.form.get("status", "").strip()
+    if status not in TASK_STATUSES:
+        return "Invalid task status.", 400
+    priority = request.form.get("priority", "").strip()
+    if priority not in TASK_PRIORITIES:
+        return "Invalid task priority.", 400
+    task_type = request.form.get("task_type", "").strip()
+    if task_type not in list_task_types():
+        return "Invalid task type.", 400
+
     values = (
         signin_id, agent_id, title, request.form.get("due_date", "").strip(),
-        request.form.get("priority", "Normal").strip(),
-        request.form.get("status", "Open").strip(), request.form.get("notes", "").strip(),
+        priority, task_type, status, request.form.get("notes", "").strip(),
         thank_you_selected, thank_you_date, thank_you_time, thank_you_send_now,
         follow_up_selected, follow_up_date, follow_up_time, follow_up_send_now,
         notes_email_selected, notes_email_date, notes_email_time, notes_email_send_now
@@ -148,9 +189,9 @@ def create_task():
     if action == "update":
         if not task_id:
             return "Task is required for an update.", 400
-        update_task(values, task_id)
+        update_task(values, task_id, session.get("username"))
     else:
-        insert_task(values)
+        insert_task(values, session.get("username"))
 
     if thank_you_send_now or follow_up_send_now or notes_email_send_now:
         client = get_signin_email(signin_id)
@@ -169,5 +210,5 @@ def create_task():
 
 @app.route("/tasks/delete/<int:task_id>", methods=["POST"])
 def delete_task(task_id):
-    delete_task_row(task_id)
+    delete_task_row(task_id, session.get("username"))
     return redirect(url_for("tasks"))

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task History | Lead Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #172033; --muted: #66748a; --line: #d9e1ea; --paper: #fff; --canvas: #e8edf3; --blue: #2563c7; --green: #287d68; --gold: #d9922e; }
+        * { box-sizing: border-box; }
+        body { min-height: 100vh; margin: 0; padding: 32px clamp(16px, 4vw, 56px); color: var(--ink); background: radial-gradient(circle at top right, #f8f0df 0, transparent 34%), var(--canvas); font-family: "DM Sans", Arial, sans-serif; }
+        .page { max-width: 1480px; margin: 0 auto; }
+        .shortcut-bar { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 26px; }
+        .shortcut-bar a { padding: 9px 13px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.75); color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 700; }
+        .shortcut-bar a:hover, .shortcut-bar a.active { border-color: var(--blue); color: var(--blue); }
+        .shortcut-bar .task-menu { position: relative; }
+        .shortcut-bar .task-menu > summary { padding: 9px 13px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.75); color: var(--ink); cursor: pointer; font-size: 13px; font-weight: 700; list-style: none; }
+        .shortcut-bar .task-menu > summary::-webkit-details-marker { display: none; }
+        .shortcut-bar .task-submenu { position: absolute; z-index: 2; top: calc(100% + 5px); left: 0; display: grid; min-width: 150px; gap: 3px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 8px 18px rgba(23,32,51,.14); }
+        .shortcut-bar .task-submenu a { padding: 8px 10px; border: 0; background: transparent; white-space: nowrap; }
+        h1, h2 { font-family: "Space Grotesk", Arial, sans-serif; }
+        h1 { margin: 0; font-size: 36px; }
+        .intro { margin: 7px 0 22px; color: var(--muted); }
+        .history-panel { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.94); box-shadow: 0 14px 34px rgba(23,32,51,.08); }
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 13px 15px; border-bottom: 1px solid var(--line); vertical-align: top; }
+        th { background: #f3f6f9; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        td { font-size: 13px; }
+        tr:last-child td { border-bottom: 0; }
+        .event-label { display: inline-block; padding: 4px 8px; border-radius: 7px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; }
+        .event-label.created { background: #e7f5ed; color: #287d68; }
+        .event-label.deleted { background: #fff0f1; color: #c82333; }
+        .task-name { min-width: 150px; font-weight: 800; }
+        .changes { min-width: 300px; }
+        .changes summary { color: var(--blue); font-weight: 800; cursor: pointer; }
+        .change-list { display: grid; gap: 9px; margin: 12px 0 0; }
+        .change-item { padding-top: 8px; border-top: 1px solid var(--line); }
+        .change-item dt { margin-bottom: 4px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .change-item dd { margin: 0; overflow-wrap: anywhere; line-height: 1.5; }
+        .change-item code { font-family: "DM Sans", sans-serif; white-space: pre-wrap; }
+        .empty-state { padding: 46px 20px; color: var(--muted); text-align: center; }
+        @media (max-width: 640px) { body { padding: 20px 12px; } h1 { font-size: 30px; } th, td { padding: 11px; } }
+    </style>
+</head>
+<body>
+<main class="page">
+    <nav class="shortcut-bar" aria-label="Page navigation">
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('properties') }}">Properties</a>
+        <a href="{{ url_for('agents') }}">Agents</a>
+        <a href="{{ url_for('brokers') }}">Brokers</a>
+        <a href="{{ url_for('contacts') }}">Contacts</a>
+        <details class="task-menu">
+            <summary>Tasks</summary>
+            <div class="task-submenu">
+                <a href="{{ url_for('tasks') }}">Task Board</a>
+                <a href="{{ url_for('generate_open_house') }}">Open Houses</a>
+            </div>
+        </details>
+        <a class="active" href="{{ url_for('task_history') }}">History</a>
+    </nav>
+    <header>
+        <h1>Task History</h1>
+        <p class="intro">Task activity with the values before and after each change.</p>
+    </header>
+    <section class="history-panel" aria-label="Task activity history">
+        {% if history %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Changed</th><th>Action</th><th>Task</th><th>Changed by</th><th>Details</th></tr></thead>
+                <tbody>
+                    {% for event in history %}
+                    <tr>
+                        <td>{{ event.changed_at }}</td>
+                        <td><span class="event-label {{ event.action|lower }}">{{ event.action }}</span></td>
+                        <td class="task-name">#{{ event.task_id }} {{ event.task_title or "Untitled task" }}</td>
+                        <td>{{ event.changed_by or "Unknown" }}</td>
+                        <td class="changes">
+                            <details>
+                                <summary>{{ event.changes|length }} field{% if event.changes|length != 1 %}s{% endif %}</summary>
+                                {% if event.changes %}
+                                <dl class="change-list">
+                                    {% for change in event.changes %}
+                                    <div class="change-item">
+                                        <dt>{{ change.field }}</dt>
+                                        <dd>Before: <code>{{ change.before }}</code><br>After: <code>{{ change.after }}</code></dd>
+                                    </div>
+                                    {% endfor %}
+                                </dl>
+                                {% else %}<p>No field values changed.</p>{% endif %}
+                            </details>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">No task history recorded yet.</div>
+        {% endif %}
+    </section>
+</main>
+</body>
+</html>

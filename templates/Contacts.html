@@ -53,6 +53,12 @@
         .meta-label { color: var(--muted); font-weight: 700; }
         .meta-value { overflow-wrap: anywhere; color: var(--ink); font-weight: 600; }
         .meta-value.contact-email { color: #194c9d; }
+        .all-fields { margin-top: 12px; border-top: 1px solid var(--line); }
+        .all-fields summary { padding: 11px 0 2px; color: var(--blue); font-size: 12px; font-weight: 800; cursor: pointer; }
+        .all-fields-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 16px; margin-top: 10px; }
+        .all-field { min-width: 0; font-size: 12px; }
+        .all-field-label { display: block; margin-bottom: 2px; color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+        .all-field-value { overflow-wrap: anywhere; color: var(--ink); font-weight: 600; }
         .badge { display: inline-block; padding: 5px 9px; border-radius: 999px; background: #eaf2ff; color: #194c9d; font-size: 11px; font-weight: 900; text-transform: capitalize; }
         .score { min-width: 48px; padding: 7px 8px; border-radius: 8px; background: #eef8f3; color: var(--green); font-size: 13px; font-weight: 900; text-align: center; }
         .contact-actions { justify-content: flex-end; margin-top: 10px; }
@@ -61,7 +67,7 @@
         .small-button.delete { background: #fff0f1; color: var(--red); }
         .empty-state { padding: 45px 20px; border: 1px dashed #aeb9ca; border-radius: 12px; color: var(--muted); text-align: center; }
         @media (max-width: 1050px) { .topbar { grid-template-columns: minmax(210px, 280px) minmax(0, 1fr); } .top-actions { grid-column: 2; grid-row: 1; justify-content: flex-end; } .title-block { grid-column: 1 / -1; grid-row: 2; } }
-        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-sections { grid-template-columns: 1fr; } .meta-row { grid-template-columns: 82px minmax(0, 1fr); } .contact-actions { justify-content: flex-start; } }
+        @media (max-width: 600px) { body { padding: 20px 12px; } .topbar { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; } .search-control { width: 100%; } .top-actions { width: 100%; } .panel { padding: 18px; } .contact-row { grid-template-columns: 1fr; } .contact-sections, .all-fields-grid { grid-template-columns: 1fr; } .meta-row { grid-template-columns: 82px minmax(0, 1fr); } .contact-actions { justify-content: flex-start; } }
 
         /* SIDEBAR DASHBOARD LAYOUT */
         body { min-height: 100vh; padding: 0; }
@@ -86,6 +92,14 @@
         .nav-settings::before { content: "\2699"; background: #c1ccd9; }
         .sidebar-nav a:hover, .sidebar-nav a.active { transform: translateX(3px); background: rgba(255,255,255,.1); color: #fff; }
         .sidebar-nav a.active { border-left-color: #ffb547; }
+        .sidebar-nav .task-menu > summary { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 14px; border-left: 3px solid transparent; border-radius: 10px; color: #c8d1df; cursor: pointer; font-size: 14px; font-weight: 700; list-style: none; }
+        .sidebar-nav .task-menu > summary::-webkit-details-marker { display: none; }
+        .sidebar-nav .task-menu > summary::before { display: grid; place-items: center; width: 25px; height: 25px; border-radius: 8px; background: #c1ccd9; color: #172033; content: "T"; font-size: 13px; font-weight: 800; }
+        .sidebar-nav .task-menu > summary:hover, .sidebar-nav .task-menu[open] > summary { background: rgba(255,255,255,.1); color: #fff; }
+        .sidebar-nav .task-submenu { display: grid; gap: 3px; margin-left: 18px; padding-left: 10px; border-left: 1px solid rgba(255,255,255,.2); }
+        .sidebar-nav .task-submenu a { min-height: 36px; padding: 0 8px; border: 0; font-size: 13px; }
+        .sidebar-nav .task-submenu a::before { display: none; }
+        .sidebar-nav .task-menu[open] .task-submenu a:hover, .sidebar-nav .task-submenu a.active { background: rgba(255,255,255,.1); color: #fff; }
         .sidebar-footer { margin-top: auto; padding: 18px 14px 0; color: #8290a5; font-size: 12px; line-height: 1.5; }
         .content-shell { min-width: 0; padding: 32px clamp(16px, 4vw, 56px); }
         @media (max-width: 768px) {
@@ -116,11 +130,17 @@
         <nav class="sidebar-nav" aria-label="Main navigation">
             <a class="nav-dashboard" href="{{ url_for('dashboard') }}">Dashboard</a>
             <a class="active nav-contacts" href="{{ url_for('contacts') }}">Contacts</a>
-            <a class="nav-analytics" href="{{ url_for('tasks') }}">Tasks</a>
+            <details class="task-menu" {% if request.endpoint in ['tasks', 'task_history', 'generate_open_house'] %}open{% endif %}>
+                <summary>Tasks</summary>
+                <div class="task-submenu">
+                    <a class="nav-subitem{% if request.endpoint == 'tasks' %} active{% endif %}" href="{{ url_for('tasks') }}">Task Board</a>
+                    <a class="nav-subitem{% if request.endpoint == 'generate_open_house' %} active{% endif %}" href="{{ url_for('generate_open_house') }}">Open Houses</a>
+                </div>
+            </details>
+            <a href="{{ url_for('task_history') }}">History</a>
             <a class="nav-properties" href="{{ url_for('properties') }}">Properties</a>
             <a class="nav-agents" href="{{ url_for('agents') }}">Agents</a>
             <a class="nav-brokers" href="{{ url_for('brokers') }}">Brokers</a>
-            <a class="nav-open-house" href="{{ url_for('generate_open_house') }}">Generate Open House</a>
             <a class="nav-signins" href="{{ url_for('signin') }}">Sign-Ins</a>
             <a href="{{ url_for('export_csv') }}">Export CSV</a>
             <a class="nav-settings" href="{{ url_for('logout') }}">Log Out</a>
@@ -214,6 +234,22 @@
                                 <div class="meta-row"><span class="meta-label">Zip / Agent</span><span class="meta-value">{{ contact.zip_code or "Not set" }} / {{ contact.agent_name or "Unassigned" }}</span></div>
                             </section>
                         </div>
+                        <details class="all-fields">
+                            <summary>All contact fields</summary>
+                            {% for group in contact.field_groups %}
+                            <section class="field-group">
+                                <h3>{{ group.title }}</h3>
+                                <div class="all-fields-grid">
+                                    {% for field in group.fields %}
+                                    <div class="all-field">
+                                        <span class="all-field-label">{{ field.label }}</span>
+                                        <span class="all-field-value">{{ field.value }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </section>
+                            {% endfor %}
+                        </details>
                         <div class="contact-actions">
                             <a class="button small-button" href="{{ url_for('tasks', contact_id=contact.id) }}">Create task</a>
                             <a class="button small-button edit" href="{{ url_for('edit_contact', signin_id=contact.id) }}">Edit Contact</a>
